@@ -1,0 +1,21 @@
+{
+  "name": "spacewar",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "sandbox:build": "webpack",
+    "sandbox:watch": "webpack --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/grinova/spacewar"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^4.2.0",
+    "typescript": "^2.8.3",
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.0.15"
+  }
+}
