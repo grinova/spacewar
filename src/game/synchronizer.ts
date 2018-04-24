@@ -15,18 +15,22 @@ export interface SyncData<T> {
 
 export type SyncInvoker<T> = Invoker<UserData, SyncData<T>>;
 
+export type Synchronize<T> = (world: World, data: SyncData<T>) => void;
+
 export class Synchronizer<T>
 implements Observer<SyncData<T>> {
   private world: World;
   private invoker: SyncInvoker<T>;
+  private synchronize: Synchronize<T>;
 
-  constructor(world: World, invoker: SyncInvoker<T>) {
+  constructor(world: World, invoker: SyncInvoker<T>, synchronize: Synchronize<T>) {
     this.world = world;
     this.invoker = invoker;
+    this.synchronize = synchronize;
   }
 
   notify(data: SyncData<T>): void {
-    console.log(data);
+    this.synchronize(this.world, data);
   }
 
   start(): void {

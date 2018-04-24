@@ -14,7 +14,7 @@ export class InvokerSandbox
 extends ObservableImpl<SyncData<WorldData>>
 implements Invoker<UserData, SyncData<WorldData>> {
   private static STEP_TIMEOUT = 1000 / 60;
-  private static SYNC_TIMEOUT = 1000 / 1;
+  private static SYNC_TIMEOUT = 1000 / 5;
 
   private world: World = new World();
   private stepTimer: Timer;

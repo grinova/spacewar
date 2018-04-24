@@ -8,6 +8,16 @@ import {
   World
 } from 'classic2d';
 
+export enum IdKind {
+  Arena,
+  Object
+}
+
+const DEFAULT_IDS = {
+  [IdKind.Arena]: 'arena',
+  [IdKind.Object]: 'object-'
+};
+
 function createBody(
   userData: any,
   world: World,
@@ -40,17 +50,17 @@ function rand(max: number, min: number = 0): number {
 }
 
 function createArena(world: World, radius: number): Body {
-  return createBody({ id: 'arena' }, world, radius, 1000, new Vec2(), 0, new Vec2(), 0, true, true);
+  return createBody({ id: DEFAULT_IDS[IdKind.Arena] }, world, radius, 1000, new Vec2(), 0, new Vec2(), 0, true, true);
 }
 
 function createActors(world: World, count: number, arenaRadius: number): void {
-  const ACTOR_RADIUS = 0.05;
-  const ACTORS_COUNT = 1;
+  const ACTOR_RADIUS = 0.1;
+  const ACTORS_COUNT = 20;
   for (let i = 0; i < ACTORS_COUNT; i++) {
     const position = new Vec2(rand(arenaRadius - 2 * ACTOR_RADIUS), 0)
       .rotate(new Rot().setAngle(rand(2 * Math.PI)));
     const linearVelocity = new Vec2(rand(1, 0)).rotate(new Rot().setAngle(rand(2 * Math.PI)));
-    createBody({ id: 'object-' + i }, world, ACTOR_RADIUS, 1, position, 0, linearVelocity, 0);
+    createBody({ id: DEFAULT_IDS[IdKind.Object] + i }, world, ACTOR_RADIUS, 1, position, 0, linearVelocity, 0);
   }
 }
 
