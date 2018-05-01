@@ -5,6 +5,7 @@ export class Timer {
   private interval: number;
   private timerId: number;
   private now: number;
+  private running: boolean = false;
 
   constructor(handler: TimerHandler, interval: number) {
     this.handler = handler;
@@ -14,12 +15,14 @@ export class Timer {
   run(): void {
     if (!this.timerId) {
       this.timerId = this.shot();
+      this.running = true;
     }
   }
 
   stop(): void {
     clearTimeout(this.timerId);
     this.timerId = undefined;
+    this.running = false;
   }
 
   private shot(): number {
@@ -28,6 +31,10 @@ export class Timer {
   }
 
   private intervalHandler = (): void => {
+    if (!this.running) {
+      this.stop();
+      return;
+    }
     const now = Date.now();
     const time = now - this.now;
     this.now = now;
