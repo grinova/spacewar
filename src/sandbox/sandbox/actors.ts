@@ -55,19 +55,38 @@ function createArena(world: World, radius: number): Body {
 
 function createActors(world: World, count: number, arenaRadius: number): void {
   const ACTOR_RADIUS = 0.1;
-  const ACTORS_COUNT = 20;
-  for (let i = 0; i < ACTORS_COUNT; i++) {
-    const position = new Vec2(rand(arenaRadius - 2 * ACTOR_RADIUS), 0)
-      .rotate(new Rot().setAngle(rand(2 * Math.PI)));
+  const bodies: Body[] = [];
+  for (let i = 0; i < count; i++) {
+    const position = findEmptyPlace(ACTOR_RADIUS, arenaRadius, bodies);
+    if (!position) {
+      return;
+    }
     const linearVelocity = new Vec2(rand(1, 0)).rotate(new Rot().setAngle(rand(2 * Math.PI)));
-    createBody({ id: DEFAULT_IDS[IdKind.Object] + i }, world, ACTOR_RADIUS, 1, position, 0, linearVelocity, 0);
+    bodies.push(
+      createBody({ id: DEFAULT_IDS[IdKind.Object] + i }, world, ACTOR_RADIUS, 1, position, 0, linearVelocity, 0));
   }
 }
 
 function createBodies(world: World): void {
   const ARENA_RADIUS = 3;
+  const ACTORS_COUNT = 20;
   const arena = createArena(world, ARENA_RADIUS);
-  createActors(world, 20, ARENA_RADIUS);
+  createActors(world, ACTORS_COUNT, ARENA_RADIUS);
+}
+
+function findEmptyPlace(radius: number, arenaRadius: number, bodies: Body[], iterations: number = 20): void | Vec2 {
+  const maxEmptyRadius = arenaRadius - 2 * radius;
+  for (let i = 0; i < iterations; i++) {
+    const position = new Vec2(rand(maxEmptyRadius), 0).rotate(new Rot().setAngle(rand(2 * Math.PI)));
+    if (bodies.every(body => {
+      const p = body.getPosition();
+      const r = body.getRadius();
+      const d = Math.sqrt(p.sub(position).length());
+      return d > radius + r;
+    })) {
+      return position;
+    }
+  }
 }
 
 export function resetWorld(world: World): void {
