@@ -1,14 +1,14 @@
 import { World } from 'classic2d';
 import { WorldData } from 'serializers/world';
 import { Session } from './session';
-import { SyncInvoker } from './synchronizer';
+import { SyncInvoker, UserData } from './synchronizer';
 
 export class Game {
   private session: void | Session;
-  private userWorld: World;
+  private userWorld: World<UserData>;
   private invoker: SyncInvoker<WorldData>;
 
-  constructor(userWorld: World, invoker: SyncInvoker<WorldData>) {
+  constructor(userWorld: World<UserData>, invoker: SyncInvoker<WorldData>) {
     this.userWorld = userWorld;
     this.invoker = invoker;
   }

@@ -1,14 +1,11 @@
 import { World } from 'classic2d';
 import { WorldData } from 'serializers/world';
 import { ObservableImpl } from '../../common/observable';
-import { SyncData } from '../../game/synchronizer';
+import { SyncData, UserData } from '../../game/synchronizer';
 import { Invoker } from '../../net/invoker';
 import { resetWorld } from '../sandbox/actors';
 import { serializeWorld } from '../serializers/world';
 import { Timer } from '../timer/timer';
-
-export interface UserData {
-}
 
 export class InvokerSandbox
 extends ObservableImpl<SyncData<WorldData>>
@@ -16,7 +13,7 @@ implements Invoker<UserData, SyncData<WorldData>> {
   private static STEP_TIMEOUT = 1000 / 60;
   private static SYNC_TIMEOUT = 1000 / 5;
 
-  private world: World = new World();
+  private world: World<UserData> = new World<UserData>();
   private stepTimer: Timer;
   private syncTimer: Timer;
 

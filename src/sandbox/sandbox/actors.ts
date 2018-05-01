@@ -7,6 +7,7 @@ import {
   Vec2,
   World
 } from 'classic2d';
+import { UserData } from '../../game/synchronizer';
 
 export enum IdKind {
   Arena,
@@ -19,7 +20,7 @@ const DEFAULT_IDS = {
 };
 
 function createBody(
-  userData: any,
+  userData: UserData,
   world: World,
   radius: number,
   density: number,

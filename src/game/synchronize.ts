@@ -5,12 +5,12 @@ import {
   Vec2,
   World
 } from 'classic2d';
-import { SyncData } from './synchronizer';
+import { SyncData, UserData } from './synchronizer';
 import { BodyData } from '../serializers/body';
 import { ContactData } from '../serializers/contact';
 import { WorldData } from '../serializers/world';
 
-function createBody(b: BodyData, world: World): Body {
+function createBody(b: BodyData, world: World<UserData>): Body {
   const inverse = b.type == 'arena';
   const bodyDef = {
     position: new Vec2(b.position.x, b.position.y),
@@ -29,14 +29,14 @@ function createBody(b: BodyData, world: World): Body {
   const fd = { shape, density };
   const fixtureDef = { shape, density };
   body.setFixture(fixtureDef);
-  body.userData = { 'id': b.id };
+  body.userData = { id: b.id };
   return body;
 }
 
-function findBody(id: string, world: World): void | Body {
+function findBody(id: string, world: World<UserData>): void | Body {
   const bodies = world.getBodies();
   for (const body of bodies) {
-    if (body.userData['id'] === id) {
+    if (body.userData.id === id) {
       return body;
     }
   }
@@ -50,10 +50,10 @@ function syncBody(body: Body, b: BodyData): void {
   body.synchronize();
 }
 
-function syncBodies(world: World, bodiesData: BodyData[]): void {
+function syncBodies(world: World<UserData>, bodiesData: BodyData[]): void {
   const bodies = world.getBodies();
   for (const b of bodiesData) {
-    const body = bodies.find(body => body.userData['id'] === b.id)
+    const body = bodies.find(body => body.userData.id === b.id)
     if (body) {
       syncBody(body, b);
     } else {
@@ -62,19 +62,19 @@ function syncBodies(world: World, bodiesData: BodyData[]): void {
   }
 }
 
-function syncContacts(world: World, contactsData: ContactData[]): void {
+function syncContacts(world: World<UserData>, contactsData: ContactData[]): void {
   const contactManager = world.getContactManager();
   const contacts = contactManager.getContacts().slice();
   for (const contact of contacts) {
     const index = contactsData.findIndex(
-      c => c.bodyAID === contact.bodyA.userData['id'] && c.bodyBID === contact.bodyB.userData['id']);
+      c => c.bodyAID === contact.bodyA.userData.id && c.bodyBID === contact.bodyB.userData.id);
     if (index === -1) {
       contactManager.destroy(contact);
     }
   }
   for (const c of contactsData) {
     const contact = contacts.find(
-      contact => contact.bodyA.userData['id'] === c.bodyAID && contact.bodyB.userData['id'] === c.bodyBID)
+      contact => contact.bodyA.userData.id === c.bodyAID && contact.bodyB.userData.id === c.bodyBID)
     if (contact) {
       contact.flags = c.flags;
     } else {
@@ -89,7 +89,7 @@ function syncContacts(world: World, contactsData: ContactData[]): void {
 }
 
 // TODO: data: WorldData
-export function synchronize(world: World, data: SyncData<WorldData>): void {
+export function synchronize(world: World<UserData>, data: SyncData<WorldData>): void {
   syncBodies(world, data.data.bodies);
   syncContacts(world, data.data.contacts);
 }
