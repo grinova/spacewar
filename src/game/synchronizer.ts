@@ -2,8 +2,11 @@ import { World } from 'classic2d';
 import { Observer } from '../common/observable';
 import { Invoker } from '../net/invoker';
 
+export type ObjectType = 'arena' | 'object';
+
 export interface UserData {
   id: string;
+  type: ObjectType;
 }
 
 export type MessageType = 'world-data' | 'error';

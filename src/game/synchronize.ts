@@ -29,7 +29,7 @@ function createBody(b: BodyData, world: World<UserData>): Body {
   const fd = { shape, density };
   const fixtureDef = { shape, density };
   body.setFixture(fixtureDef);
-  body.userData = { id: b.id };
+  body.userData = { id: b.id, type: b.type };
   return body;
 }
 
@@ -51,7 +51,12 @@ function syncBody(body: Body, b: BodyData): void {
 }
 
 function syncBodies(world: World<UserData>, bodiesData: BodyData[]): void {
-  const bodies = world.getBodies();
+  const bodies = world.getBodies().slice();
+  for (const body of bodies) {
+    if (bodiesData.every(b => b.id !== body.userData.id)) {
+      world.destroyBody(body);
+    }
+  }
   for (const b of bodiesData) {
     const body = bodies.find(body => body.userData.id === b.id)
     if (body) {

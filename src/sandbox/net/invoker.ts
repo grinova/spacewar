@@ -3,6 +3,7 @@ import { WorldData } from 'serializers/world';
 import { ObservableImpl } from '../../common/observable';
 import { SyncData, UserData } from '../../game/synchronizer';
 import { Invoker } from '../../net/invoker';
+import { ContactListener } from '../contact-listener';
 import { resetWorld } from '../sandbox/actors';
 import { serializeWorld } from '../serializers/world';
 import { Timer } from '../timer/timer';
@@ -16,6 +17,7 @@ implements Invoker<UserData, SyncData<WorldData>> {
   private world: World<UserData> = new World<UserData>();
   private stepTimer: Timer;
   private syncTimer: Timer;
+  private contactListener: ContactListener;
 
   constructor() {
     super();
@@ -26,6 +28,8 @@ implements Invoker<UserData, SyncData<WorldData>> {
   }
 
   run(): void {
+    this.contactListener = new ContactListener(this.world);
+    this.world.setContactListener(this.contactListener);
     this.stepTimer.run();
     this.syncTimer.run();
   }
@@ -34,6 +38,7 @@ implements Invoker<UserData, SyncData<WorldData>> {
   }
 
   stop(): void {
+    this.contactListener.destroy();
     this.stepTimer.stop();
     this.syncTimer.stop();
   }

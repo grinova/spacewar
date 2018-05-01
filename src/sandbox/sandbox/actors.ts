@@ -21,7 +21,7 @@ const DEFAULT_IDS = {
 
 function createBody(
   userData: UserData,
-  world: World,
+  world: World<UserData>,
   radius: number,
   density: number,
   position: Vec2,
@@ -50,8 +50,8 @@ function rand(max: number, min: number = 0): number {
   return Math.random() * (max - min) + min;
 }
 
-function createArena(world: World, radius: number): Body {
-  return createBody({ id: DEFAULT_IDS[IdKind.Arena] }, world, radius, 1000, new Vec2(), 0, new Vec2(), 0, true, true);
+function createArena(world: World<UserData>, radius: number): Body<UserData> {
+  return createBody({ id: DEFAULT_IDS[IdKind.Arena], type: 'arena' }, world, radius, 1000, new Vec2(), 0, new Vec2(), 0, true, true);
 }
 
 function createActors(world: World, count: number, arenaRadius: number): void {
@@ -64,7 +64,7 @@ function createActors(world: World, count: number, arenaRadius: number): void {
     }
     const linearVelocity = new Vec2(rand(1, 0)).rotate(new Rot().setAngle(rand(2 * Math.PI)));
     bodies.push(
-      createBody({ id: DEFAULT_IDS[IdKind.Object] + i }, world, ACTOR_RADIUS, 1, position, 0, linearVelocity, 0));
+      createBody({ id: DEFAULT_IDS[IdKind.Object] + i, type: 'object' }, world, ACTOR_RADIUS, 1, position, 0, linearVelocity, 0));
   }
 }
 
