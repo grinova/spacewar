@@ -11,6 +11,7 @@ import { UserData } from '../game/synchronizer';
 
 class SandboxHandler {
   private world: void | World<UserData>;
+  private sandbox: void | Sandbox;
   private shipControl: void | ShipControl;
   private game: void | Game;
   private invoker: void | InvokerSandbox;
@@ -19,6 +20,11 @@ class SandboxHandler {
   keyDown = (event: KeyboardEvent): void => {
     if (this.shipControl) {
       switch (event.key) {
+        case 't':
+          if (this.world && this.sandbox) {
+            this.reset(this.world, this.sandbox, true)
+          }
+          break;
         case 'w':
           this.shipControl.setThrottle(1);
           break;
@@ -39,14 +45,13 @@ class SandboxHandler {
     }
   };
 
-  reset = (world: World<UserData>, sandbox: Sandbox, stop: boolean = true): void => {
+  reset = (world: World<UserData>, sandbox: Sandbox, stop?: boolean): void => {
     this.world = world;
+    this.sandbox = sandbox;
     sandbox.zoom(12);
     if (this.contactListener) {
       this.contactListener.destroy();
     }
-    this.contactListener = new ContactListener(this.world);
-    sandbox.setContactListener(this.contactListener);
     if (this.invoker) {
       this.invoker.stop();
     }
@@ -57,6 +62,8 @@ class SandboxHandler {
       sandbox.stop();
       return;
     }
+    this.contactListener = new ContactListener(this.world);
+    sandbox.setContactListener(this.contactListener);
     this.invoker = new InvokerSandbox();
     this.shipControl = new ShipControl(this.world, this.invoker);
     this.game = new Game(this.world, this.invoker);
