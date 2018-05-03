@@ -7,16 +7,8 @@ import {
   Vec2,
   World
 } from 'classic2d';
+import { IDS } from '../../game/consts';
 import { ObjectType, UserData } from '../../game/synchronizer';
-
-export const IDS = {
-  ARENA: 'arena',
-  BLACK_HOLE: 'black-hole',
-  SHIP_A: 'ship-a',
-  SHIP_B: 'ship-b',
-  ROCKET_A: 'rocket-a',
-  ROCKET_B: 'rocket-b'
-}
 
 export function resetWorld(world: World): void {
   world.clear();

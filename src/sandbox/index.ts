@@ -6,16 +6,37 @@ import {
 import { ContactListener } from './contact-listener';
 import { InvokerSandbox } from './net/invoker';
 import { Game } from '../game/game';
+import { ShipControl } from '../game/ship-control';
 import { UserData } from '../game/synchronizer';
 
-class SandboxActions {
+class SandboxHandler {
   private world: void | World<UserData>;
+  private shipControl: void | ShipControl;
   private game: void | Game;
   private invoker: void | InvokerSandbox;
   private contactListener: void | ContactListener;
 
+  keyDown = (event: KeyboardEvent): void => {
+    if (this.shipControl) {
+      switch (event.key) {
+        case 'w':
+          this.shipControl.setThrottle(1);
+          break;
+        case 's':
+          this.shipControl.setThrottle(0);
+          break;
+      }
+    }
+  };
+
   init = (world: World<UserData>, sandbox: Sandbox) => {
     this.reset(world, sandbox, false);
+  };
+
+  preStep = (): void => {
+    if (this.shipControl) {
+      this.shipControl.step();
+    }
   };
 
   reset = (world: World<UserData>, sandbox: Sandbox, stop: boolean = true): void => {
@@ -37,13 +58,14 @@ class SandboxActions {
       return;
     }
     this.invoker = new InvokerSandbox();
+    this.shipControl = new ShipControl(this.world, this.invoker);
     this.game = new Game(this.world, this.invoker);
     this.game.getSession();
   };
 }
 
 window.onload = () => {
-  const actions = new SandboxActions();
+  const actions = new SandboxHandler();
 
   const { sandbox } = createSandbox({
     actions,

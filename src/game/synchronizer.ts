@@ -4,6 +4,20 @@ import { Invoker } from '../net/invoker';
 
 export type ObjectType = 'arena' | 'ship-a' | 'ship-b' | 'rocket-a' | 'rocket-b' | 'black-hole';
 
+export type TransmitDataType = 'ship-control';
+
+export interface ShipControlAction {
+  type: ActionType;
+  amount?: number;
+}
+
+export type ActionType = 'throttle' | 'rotate' | 'fire';
+
+export interface TransmitData {
+  type: TransmitDataType;
+  action: ShipControlAction;
+}
+
 export interface UserData {
   id: string;
   type: ObjectType;
@@ -17,7 +31,7 @@ export interface SyncData<T> {
   error?: string;
 }
 
-export type SyncInvoker<T> = Invoker<UserData, SyncData<T>>;
+export type SyncInvoker<T> = Invoker<TransmitData, SyncData<T>>;
 
 export type Synchronize<T> = (world: World<UserData>, data: SyncData<T>) => void;
 

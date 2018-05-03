@@ -1,20 +1,27 @@
 import { World } from 'classic2d';
 import { WorldData } from 'serializers/world';
 import { ObservableImpl } from '../../common/observable';
-import { SyncData, UserData } from '../../game/synchronizer';
+import { ShipControl } from '../../game/ship-control';
+import {
+  SyncData,
+  TransmitData,
+  UserData
+} from '../../game/synchronizer';
 import { Invoker } from '../../net/invoker';
 import { ContactListener } from '../contact-listener';
+import { interact } from '../sandbox/interact';
 import { resetWorld } from '../sandbox/reset-world';
 import { serializeWorld } from '../serializers/world';
 import { Timer } from '../timer/timer';
 
 export class InvokerSandbox
 extends ObservableImpl<SyncData<WorldData>>
-implements Invoker<UserData, SyncData<WorldData>> {
+implements Invoker<TransmitData, SyncData<WorldData>> {
   private static STEP_TIMEOUT = 1000 / 60;
   private static SYNC_TIMEOUT = 1000 / 5;
 
   private world: World<UserData> = new World<UserData>();
+  private shipControl: ShipControl = new ShipControl(this.world);
   private stepTimer: Timer;
   private syncTimer: Timer;
   private contactListener: ContactListener;
@@ -34,7 +41,8 @@ implements Invoker<UserData, SyncData<WorldData>> {
     this.syncTimer.run();
   }
 
-  sendData(data: UserData): void {
+  sendData(data: TransmitData): void {
+    interact(data, this.shipControl);
   }
 
   stop(): void {
@@ -44,6 +52,7 @@ implements Invoker<UserData, SyncData<WorldData>> {
   }
 
   private handleStep = (time: number): void => {
+    this.shipControl.step();
     this.world.step(time);
   };
 
