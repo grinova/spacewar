@@ -20,6 +20,7 @@ class SandboxActions {
 
   reset = (world: World<UserData>, sandbox: Sandbox, stop: boolean = true): void => {
     this.world = world;
+    sandbox.zoom(12);
     if (this.contactListener) {
       this.contactListener.destroy();
     }

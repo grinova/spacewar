@@ -4,7 +4,7 @@ import { ObservableImpl } from '../../common/observable';
 import { SyncData, UserData } from '../../game/synchronizer';
 import { Invoker } from '../../net/invoker';
 import { ContactListener } from '../contact-listener';
-import { resetWorld } from '../sandbox/actors';
+import { resetWorld } from '../sandbox/reset-world';
 import { serializeWorld } from '../serializers/world';
 import { Timer } from '../timer/timer';
 

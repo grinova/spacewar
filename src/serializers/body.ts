@@ -1,10 +1,17 @@
+import { BodyType } from 'classic2d';
 import { PointData } from './point';
+import { ObjectType } from '../game/synchronizer';
 
-export type SubjectType = 'arena' | 'object';
+type BodyTypeData = 'static' | 'dynamic';
+
+export function serializeBodyType(type: BodyType): BodyTypeData {
+  return BodyType[type] as BodyTypeData;
+}
 
 export interface BodyData {
   id: string;
-  type: SubjectType;
+  type: BodyTypeData;
+  objectType: ObjectType;
   linearVelocity: PointData;
   angularVelocity: number;
   position: PointData;

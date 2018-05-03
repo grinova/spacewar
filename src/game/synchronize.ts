@@ -11,7 +11,7 @@ import { ContactData } from '../serializers/contact';
 import { WorldData } from '../serializers/world';
 
 function createBody(b: BodyData, world: World<UserData>): Body {
-  const inverse = b.type == 'arena';
+  const inverse = b.objectType == 'arena';
   const bodyDef = {
     position: new Vec2(b.position.x, b.position.y),
     angle: b.angle,
@@ -20,16 +20,15 @@ function createBody(b: BodyData, world: World<UserData>): Body {
     inverse
   };
   const body = world.createBody(bodyDef);
-  if (inverse) {
-    body.type = BodyType.static;
-  }
+  const type = BodyType[b.type];
+  body.type = type;
   const shape = new CircleShape();
   shape.radius = b.radius;
   const density = 1.0;
   const fd = { shape, density };
   const fixtureDef = { shape, density };
   body.setFixture(fixtureDef);
-  body.userData = { id: b.id, type: b.type };
+  body.userData = { id: b.id, type: b.objectType };
   return body;
 }
 

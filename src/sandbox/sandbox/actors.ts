@@ -64,7 +64,7 @@ function createActors(world: World, count: number, arenaRadius: number): void {
     }
     const linearVelocity = new Vec2(rand(1, 0)).rotate(new Rot().setAngle(rand(2 * Math.PI)));
     bodies.push(
-      createBody({ id: DEFAULT_IDS[IdKind.Object] + i, type: 'object' }, world, ACTOR_RADIUS, 1, position, 0, linearVelocity, 0));
+      createBody({ id: DEFAULT_IDS[IdKind.Object] + i, type: 'ship-a' }, world, ACTOR_RADIUS, 1, position, 0, linearVelocity, 0));
   }
 }
 
