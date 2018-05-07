@@ -75,11 +75,11 @@ function createBodies(world: World): void {
   const shipA = createShip(
     world,
     IDS.SHIP_A,
-    'ship-a',
+    'ship',
     { radius: SHIP_RADIUS, position: new Vec2(-OFFSET_RADIUS, -OFFSET_RADIUS), angle: 0 });
   const shipB = createShip(
     world,
     IDS.SHIP_B,
-    'ship-b',
+    'ship',
     { radius: SHIP_RADIUS, position: new Vec2(OFFSET_RADIUS, OFFSET_RADIUS), angle: Math.PI });
 }

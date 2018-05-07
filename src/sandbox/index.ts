@@ -39,6 +39,9 @@ class SandboxHandler {
       case 'd':
         this.shipControl.setTorque(-1);
         break;
+      case ' ':
+        this.shipControl.fire();
+        break;
     }
   };
 

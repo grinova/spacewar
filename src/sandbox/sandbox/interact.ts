@@ -13,6 +13,9 @@ export function interact(data: TransmitData, shipControl: ShipControl): void {
         case 'torque':
           shipControl.setTorque(amount);
           break;
+        case 'fire':
+          shipControl.fire();
+          break;
       }
       break;
   }

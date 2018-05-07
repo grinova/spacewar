@@ -2,7 +2,7 @@ import { World } from 'classic2d';
 import { Observer } from '../common/observable';
 import { Invoker } from '../net/invoker';
 
-export type ObjectType = 'arena' | 'ship-a' | 'ship-b' | 'rocket-a' | 'rocket-b' | 'black-hole';
+export type ObjectType = 'arena' | 'ship' | 'rocket' | 'black-hole';
 
 export type TransmitDataType = 'ship-control';
 
