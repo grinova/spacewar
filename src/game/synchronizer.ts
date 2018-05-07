@@ -11,7 +11,7 @@ export interface ShipControlAction {
   amount?: number;
 }
 
-export type ActionType = 'throttle' | 'rotate' | 'fire';
+export type ActionType = 'throttle' | 'torque' | 'fire';
 
 export interface TransmitData {
   type: TransmitDataType;

@@ -18,20 +18,42 @@ class SandboxHandler {
   private contactListener: void | ContactListener;
 
   keyDown = (event: KeyboardEvent): void => {
-    if (this.shipControl) {
-      switch (event.key) {
-        case 't':
-          if (this.world && this.sandbox) {
-            this.reset(this.world, this.sandbox, true)
-          }
-          break;
-        case 'w':
-          this.shipControl.setThrottle(1);
-          break;
-        case 's':
-          this.shipControl.setThrottle(0);
-          break;
-      }
+    if (!this.shipControl) {
+      return;
+    }
+    switch (event.key) {
+      case 't':
+        if (this.world && this.sandbox) {
+          this.reset(this.world, this.sandbox, true)
+        }
+        break;
+      case 'w':
+        this.shipControl.setThrottle(1);
+        break;
+      case 's':
+        this.shipControl.setThrottle(0);
+        break;
+      case 'a':
+        this.shipControl.setTorque(1);
+        break;
+      case 'd':
+        this.shipControl.setTorque(-1);
+        break;
+    }
+  };
+
+  keyUp = (event: KeyboardEvent): void => {
+    if (!this.shipControl) {
+      return;
+    }
+    switch (event.key) {
+      case 'w':
+        this.shipControl.setThrottle(0);
+        break;
+      case 'a':
+      case 'd':
+        this.shipControl.setTorque(0);
+        break;
     }
   };
 
@@ -84,6 +106,9 @@ window.onload = () => {
   });
   window.addEventListener('keydown', (event: KeyboardEvent) => {
     sandbox.keyDown(event);
+  });
+  window.addEventListener('keyup', (event: KeyboardEvent) => {
+    actions.keyUp(event);
   });
   sandbox.run();
 };
