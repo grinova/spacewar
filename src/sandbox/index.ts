@@ -1,15 +1,12 @@
-import {
-  createSandbox,
-  Sandbox,
-  World
-} from 'classic2d';
+import { World } from 'classic2d';
+import { createSandbox, Sandbox } from 'classic2d-sandbox';
 import { InvokerSandbox } from './net/invoker';
 import { Game } from '../game/game';
 import { UserData } from '../game/synchronizer';
 
 class SandboxHandler {
   private world: void | World<UserData>;
-  private sandbox: void | Sandbox;
+  private sandbox: void | Sandbox<UserData>;
   private game: void | Game;
   private invoker: void | InvokerSandbox;
 
@@ -60,7 +57,7 @@ class SandboxHandler {
     }
   };
 
-  init = (world: World<UserData>, sandbox: Sandbox) => {
+  init = (world: World<UserData>, sandbox: Sandbox<UserData>) => {
     this.reset(world, sandbox, false);
   };
 
@@ -68,7 +65,7 @@ class SandboxHandler {
     this.game && this.game.step();
   };
 
-  reset = (world: World<UserData>, sandbox: Sandbox, stop?: boolean): void => {
+  reset = (world: World<UserData>, sandbox: Sandbox<UserData>, stop?: boolean): void => {
     this.world = world;
     this.sandbox = sandbox;
     sandbox.zoom(12);
@@ -96,7 +93,7 @@ class SandboxHandler {
 window.onload = () => {
   const actions = new SandboxHandler();
 
-  const { sandbox } = createSandbox({
+  const { sandbox } = createSandbox<UserData>({
     actions,
     width: window.innerWidth,
     height: window.innerHeight
