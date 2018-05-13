@@ -30,10 +30,13 @@ export class ContactListener implements BaseContactListener<UserData> {
       typeA === 'black-hole' && (typeB === 'rocket' || typeB === 'ship')
     ) {
       this.destroyBodyAndContact(contact.bodyB, contact);
+      this.onDestroy(contact.bodyB);
     }
     if (typeA === 'ship' && typeB === 'rocket') {
       this.destroyBodyAndContact(contact.bodyA, contact);
       this.destroyBodyAndContact(contact.bodyB, contact);
+      this.onDestroy(contact.bodyA);
+      this.onDestroy(contact.bodyB);
     }
   }
 
@@ -43,10 +46,13 @@ export class ContactListener implements BaseContactListener<UserData> {
   preSolve(contact: Contact<UserData>): void {
   }
 
+  private onDestroy(body: Body): void {
+    this.onBodyDestroy && this.onBodyDestroy(body);
+  }
+
   private destroyBodyAndContact(body: Body<UserData>, contact: Contact<UserData>): void {
     this.world.destroyBody(body);
     const contactManager = this.world.getContactManager();
     contactManager.destroy(contact);
-    this.onBodyDestroy && this.onBodyDestroy(body);
   }
 }
