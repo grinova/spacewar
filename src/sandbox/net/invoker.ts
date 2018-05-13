@@ -1,18 +1,24 @@
 import { World } from 'classic2d';
 import { WorldData } from 'serializers/world';
 import { ObservableImpl } from '../../common/observable';
-import { ShipControl } from '../../game/ship-control';
+import { ContactListener } from '../../game/contact-listener';
+import { Game } from '../../game/game';
 import {
   SyncData,
   TransmitData,
   UserData
 } from '../../game/synchronizer';
 import { Invoker } from '../../net/invoker';
-import { ContactListener } from '../contact-listener';
 import { interact } from '../sandbox/interact';
-import { resetWorld } from '../sandbox/reset-world';
+import { sample } from '../sandbox/reset-world.sample';
 import { serializeWorld } from '../serializers/world';
 import { Timer } from '../timer/timer';
+
+class FakeInvoker
+extends ObservableImpl<SyncData<WorldData>>
+implements Invoker<TransmitData, SyncData<WorldData>> {
+  sendData(_data: TransmitData): void {}
+}
 
 export class InvokerSandbox
 extends ObservableImpl<SyncData<WorldData>>
@@ -21,38 +27,39 @@ implements Invoker<TransmitData, SyncData<WorldData>> {
   private static SYNC_TIMEOUT = 1000 / 5;
 
   private world: World<UserData> = new World<UserData>();
-  private shipControl: ShipControl = new ShipControl(this.world);
+  private fakeInvoker: FakeInvoker = new FakeInvoker();
+  private game: Game = new Game(this.world, this.fakeInvoker);
+  private contactListener: ContactListener = new ContactListener(this.world);
   private stepTimer: Timer;
   private syncTimer: Timer;
-  private contactListener: ContactListener;
 
   constructor() {
     super();
+    this.world.setContactListener(this.contactListener);
     this.stepTimer = new Timer(this.handleStep, InvokerSandbox.STEP_TIMEOUT);
     this.syncTimer = new Timer(this.handleSync, InvokerSandbox.SYNC_TIMEOUT);
-    resetWorld(this.world);
-    this.run();
   }
 
   run(): void {
-    this.contactListener = new ContactListener(this.world);
-    this.world.setContactListener(this.contactListener);
+    this.game.start();
+    this.fakeInvoker.notifyObservers(sample as any);
     this.stepTimer.run();
     this.syncTimer.run();
   }
 
   sendData(data: TransmitData): void {
-    interact(data, this.shipControl);
+    const ship = this.game.getShipController();
+    ship && interact(data, ship);
   }
 
   stop(): void {
-    this.contactListener.destroy();
+    this.game.destroy();
     this.stepTimer.stop();
     this.syncTimer.stop();
   }
 
   private handleStep = (time: number): void => {
-    this.shipControl.step();
+    this.game.step();
     this.world.step(time);
   };
 
@@ -62,6 +69,6 @@ implements Invoker<TransmitData, SyncData<WorldData>> {
       type: 'world-data',
       data: worldData
     };
-    this.notifyObservers(data);
+    this.notifyObservers(JSON.parse(JSON.stringify(data)));
   };
 }

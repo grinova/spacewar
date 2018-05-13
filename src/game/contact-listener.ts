@@ -4,19 +4,20 @@ import {
   ContactListener as BaseContactListener,
   World
 } from 'classic2d';
-import { UserData } from '../game/synchronizer';
+import { BodyHandler, UserData } from './synchronizer';
 
-export class ContactListener extends BaseContactListener<UserData> {
+export class ContactListener implements BaseContactListener<UserData> {
   private world: World;
+  private onBodyDestroy: void | BodyHandler;
 
-  constructor(world: World) {
-    super();
+  constructor(world: World, onBodyDestroy?: void | BodyHandler) {
     this.world = world;
+    this.onBodyDestroy = onBodyDestroy;
   }
 
   // NOTE: Во избежание циклических ссылок
   destroy(): void {
-    this.world = undefined;
+    this.world = null;
   }
 
   beginContact(contact: Contact<UserData>): void {
@@ -46,5 +47,6 @@ export class ContactListener extends BaseContactListener<UserData> {
     this.world.destroyBody(body);
     const contactManager = this.world.getContactManager();
     contactManager.destroy(contact);
+    this.onBodyDestroy && this.onBodyDestroy(body);
   }
 }

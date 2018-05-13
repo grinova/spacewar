@@ -1,4 +1,4 @@
-import { World } from 'classic2d';
+import { Body, World } from 'classic2d';
 import { Observer } from '../common/observable';
 import { Invoker } from '../net/invoker';
 
@@ -18,10 +18,27 @@ export interface TransmitData {
   action: ShipControlAction;
 }
 
-export interface UserData {
-  id: string;
-  type: ObjectType;
+export interface RocketProperties {
+  owner: string;
 }
+
+export interface ShipUserData {
+  id: string;
+  type: 'ship';
+}
+
+interface RocketUserData {
+  id: string;
+  type: 'rocket';
+  properties: RocketProperties;
+}
+
+interface CommonUserData {
+  id: string;
+  type: 'arena' | 'black-hole';
+}
+
+export type UserData = CommonUserData | ShipUserData | RocketUserData;
 
 export type MessageType = 'world-data' | 'error';
 
@@ -33,22 +50,31 @@ export interface SyncData<T> {
 
 export type SyncInvoker<T> = Invoker<TransmitData, SyncData<T>>;
 
-export type Synchronize<T> = (world: World<UserData>, data: SyncData<T>) => void;
+export type Synchronize<T> = (world: World<UserData>, data: SyncData<T>, handlers?: void | SynchronizerHandlers) => void;
+
+export type BodyHandler = (body: Body<UserData>) => void;
+
+export interface SynchronizerHandlers {
+  onBodyCreate?: void | BodyHandler;
+  onBodyDestroy?: void | BodyHandler;
+}
 
 export class Synchronizer<T>
 implements Observer<SyncData<T>> {
   private world: World<UserData>;
   private invoker: SyncInvoker<T>;
   private synchronize: Synchronize<T>;
+  private handlers?: void | SynchronizerHandlers;
 
-  constructor(world: World<UserData>, invoker: SyncInvoker<T>, synchronize: Synchronize<T>) {
+  constructor(world: World<UserData>, invoker: SyncInvoker<T>, synchronize: Synchronize<T>, handlers?: void | SynchronizerHandlers) {
     this.world = world;
     this.invoker = invoker;
     this.synchronize = synchronize;
+    this.handlers = handlers;
   }
 
   notify(data: SyncData<T>): void {
-    this.synchronize(this.world, data);
+    this.synchronize(this.world, data, this.handlers);
   }
 
   start(): void {

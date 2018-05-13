@@ -62,8 +62,8 @@ function createBlackHole(world: World<UserData>): Body<UserData> {
   return createBody({ id: IDS.BLACK_HOLE, type: 'black-hole' }, world, { radius: 0.125, isStatic: true });
 }
 
-function createShip(world: World<UserData>, id: string, type: ObjectType, bodyOptions: BodyOptions): Body<UserData> {
-  return createBody({ id, type }, world, bodyOptions);
+function createShip(world: World<UserData>, id: string, bodyOptions: BodyOptions): Body<UserData> {
+  return createBody({ id, type: 'ship' }, world, bodyOptions);
 }
 
 function createBodies(world: World): void {
@@ -75,11 +75,9 @@ function createBodies(world: World): void {
   const shipA = createShip(
     world,
     IDS.SHIP_A,
-    'ship',
     { radius: SHIP_RADIUS, position: new Vec2(-OFFSET_RADIUS, -OFFSET_RADIUS), angle: 0 });
   const shipB = createShip(
     world,
     IDS.SHIP_B,
-    'ship',
     { radius: SHIP_RADIUS, position: new Vec2(OFFSET_RADIUS, OFFSET_RADIUS), angle: Math.PI });
 }

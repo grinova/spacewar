@@ -3,59 +3,59 @@ import {
   Sandbox,
   World
 } from 'classic2d';
-import { ContactListener } from './contact-listener';
 import { InvokerSandbox } from './net/invoker';
 import { Game } from '../game/game';
-import { ShipControl } from '../game/ship-control';
 import { UserData } from '../game/synchronizer';
 
 class SandboxHandler {
   private world: void | World<UserData>;
   private sandbox: void | Sandbox;
-  private shipControl: void | ShipControl;
   private game: void | Game;
   private invoker: void | InvokerSandbox;
-  private contactListener: void | ContactListener;
 
   keyDown = (event: KeyboardEvent): void => {
-    if (!this.shipControl) {
-      return;
-    }
     switch (event.key) {
       case 't':
         if (this.world && this.sandbox) {
           this.reset(this.world, this.sandbox, true)
         }
         break;
+    }
+    const ship = this.game && this.game.getShipController();
+    if (!ship) {
+      return;
+    }
+    switch (event.key) {
       case 'w':
-        this.shipControl.setThrottle(1);
+        ship.setThrottle(1);
         break;
       case 's':
-        this.shipControl.setThrottle(0);
+        ship.setThrottle(0);
         break;
       case 'a':
-        this.shipControl.setTorque(1);
+        ship.setTorque(1);
         break;
       case 'd':
-        this.shipControl.setTorque(-1);
+        ship.setTorque(-1);
         break;
       case ' ':
-        this.shipControl.fire();
+        ship.fire();
         break;
     }
   };
 
   keyUp = (event: KeyboardEvent): void => {
-    if (!this.shipControl) {
+    const ship = this.game && this.game.getShipController();
+    if (!ship) {
       return;
     }
     switch (event.key) {
       case 'w':
-        this.shipControl.setThrottle(0);
+        ship.setThrottle(0);
         break;
       case 'a':
       case 'd':
-        this.shipControl.setTorque(0);
+        ship.setTorque(0);
         break;
     }
   };
@@ -65,34 +65,31 @@ class SandboxHandler {
   };
 
   preStep = (): void => {
-    if (this.shipControl) {
-      this.shipControl.step();
-    }
+    this.game && this.game.step();
   };
 
   reset = (world: World<UserData>, sandbox: Sandbox, stop?: boolean): void => {
     this.world = world;
     this.sandbox = sandbox;
     sandbox.zoom(12);
-    if (this.contactListener) {
-      this.contactListener.destroy();
-    }
     if (this.invoker) {
       this.invoker.stop();
     }
     if (this.game) {
-      this.game.closeSession();
+      this.game.destroy();
     }
     if (stop) {
       sandbox.stop();
       return;
     }
-    this.contactListener = new ContactListener(this.world);
-    sandbox.setContactListener(this.contactListener);
     this.invoker = new InvokerSandbox();
-    this.shipControl = new ShipControl(this.world, this.invoker);
-    this.game = new Game(this.world, this.invoker);
-    this.game.getSession();
+    this.game = new Game(this.world, this.invoker, { onEnd: this.handleGameEnd });
+    this.game.start();
+    this.invoker.run();
+  };
+
+  private handleGameEnd = (): void => {
+    this.sandbox && this.sandbox.reset();
   };
 }
 

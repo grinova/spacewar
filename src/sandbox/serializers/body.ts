@@ -10,8 +10,7 @@ export function serializeBody(body: Body<UserData>): BodyData {
   const angle = body.getAngle();
   const radius = Math.abs(body.getRadius());
   return {
-    id: userData.id,
-    objectType: userData.type,
+    userData: body.userData,
     type: serializeBodyType(type),
     linearVelocity: { x: lv.x, y: lv.y },
     angularVelocity,
