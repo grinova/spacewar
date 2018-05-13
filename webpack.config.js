@@ -5,7 +5,7 @@ const srcDir = path.resolve(__dirname, 'src');
 
 module.exports = {
   mode: "none",
-  entry: './src/sandbox/index.ts',
+  entry: './src/sandbox/sandbox.ts',
   output: {
     filename: 'index.js',
     path: distDir
