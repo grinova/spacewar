@@ -3,8 +3,10 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "sandbox:build": "webpack",
-    "sandbox:watch": "webpack --watch"
+    "sandbox:local": "webpack ./src/sandbox/entries/local.ts -o ./static/index.js",
+    "sandbox:remote": "webpack ./src/sandbox/entries/remote.ts -o ./static/index.js",
+    "sandbox:local:watch": "webpack ./src/sandbox/entries/local.ts -o ./static/index.js --watch",
+    "sandbox:remote:watch": "webpack ./src/sandbox/entries/remote.ts -o ./static/index.js --watch"
   },
   "repository": {
     "type": "git",

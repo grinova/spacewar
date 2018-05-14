@@ -1,14 +1,27 @@
 import { World } from 'classic2d';
 import { createSandbox, Sandbox } from 'classic2d-sandbox';
-import { InvokerSandbox } from './net/invoker';
 import { Game } from '../game/game';
-import { UserData } from '../game/synchronizer';
+import { SyncData, UserData, SyncInvoker } from '../game/synchronizer';
+import { Invoker } from '../net/invoker';
+import { WorldData } from '../serializers/world';
 
-class SandboxHandler {
+export interface Actions<T extends SyncInvoker<WorldData>> {
+  preReset?: void | ((invoker: void | T) => void);
+  postReset?: void | ((invoker: T) => void);
+}
+
+class SandboxHandler<T extends SyncInvoker<WorldData>> {
+  private invokerCreator: InvokerCreator<T>;
+  private actions?: void | Actions<T>;
   private world: void | World<UserData>;
   private sandbox: void | Sandbox<UserData>;
   private game: void | Game;
-  private invoker: void | InvokerSandbox;
+  private invoker: void | T;
+
+  constructor(invokerCreator: InvokerCreator<T>, actions?: void | Actions<T>) {
+    this.invokerCreator = invokerCreator;
+    this.actions = actions;
+  }
 
   keyDown = (event: KeyboardEvent): void => {
     switch (event.key) {
@@ -66,12 +79,10 @@ class SandboxHandler {
   };
 
   reset = (world: World<UserData>, sandbox: Sandbox<UserData>, stop?: boolean): void => {
+    this.actions && this.actions.preReset && this.actions.preReset(this.invoker);
     this.world = world;
     this.sandbox = sandbox;
     sandbox.zoom(12);
-    if (this.invoker) {
-      this.invoker.stop();
-    }
     if (this.game) {
       this.game.destroy();
     }
@@ -79,10 +90,10 @@ class SandboxHandler {
       sandbox.stop();
       return;
     }
-    this.invoker = new InvokerSandbox();
+    this.invoker = this.invokerCreator();
     this.game = new Game(this.world, this.invoker, { onEnd: this.handleGameEnd });
     this.game.start();
-    this.invoker.run();
+    this.actions && this.actions.postReset && this.actions.postReset(this.invoker);
   };
 
   private handleGameEnd = (): void => {
@@ -90,8 +101,10 @@ class SandboxHandler {
   };
 }
 
-window.onload = () => {
-  const actions = new SandboxHandler();
+export type InvokerCreator<T extends SyncInvoker<WorldData>> = () => T;
+
+export function run<T extends SyncInvoker<WorldData>>(creator: InvokerCreator<T>, a?: void | Actions<T>): void {
+  const actions = new SandboxHandler(creator, a);
 
   const { sandbox } = createSandbox<UserData>({
     actions,
@@ -108,4 +121,4 @@ window.onload = () => {
     actions.keyUp(event);
   });
   sandbox.run();
-};
+}
