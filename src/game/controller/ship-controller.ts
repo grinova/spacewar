@@ -8,11 +8,8 @@ import { Controller } from './controller';
 import { Timer } from '../../sandbox/timer/timer';
 import { WorldData } from '../../serializers/world';
 import { IDS } from '../consts';
-import {
-  BodyHandler,
-  SyncInvoker,
-  UserData
-} from '../synchronizer';
+import { BodyHandler } from '../synchronize';
+import { SyncInvoker, UserData } from '../synchronizer';
 
 type Ship = Body<UserData>;
 
@@ -26,7 +23,7 @@ export class ShipController implements Controller {
 
   private ship: Ship;
   private world: World<UserData>;
-  private invoker: SyncInvoker<WorldData>;
+  private invoker: SyncInvoker;
   private onCreateBody?: void | BodyHandler;
   private throttle: number = 0;
   private torque: number = 0;
@@ -35,7 +32,7 @@ export class ShipController implements Controller {
   private rocketCoolDown: boolean = false;
   private rocketCoolDownTimer: Timer;
 
-  constructor(ship: Ship, world: World<UserData>, invoker: SyncInvoker<WorldData>, onCreateBody?: void | BodyHandler) {
+  constructor(ship: Ship, world: World<UserData>, invoker: SyncInvoker, onCreateBody?: void | BodyHandler) {
     this.ship = ship;
     this.world = world;
     this.invoker = invoker;

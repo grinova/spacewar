@@ -4,7 +4,8 @@ import {
   ContactListener as BaseContactListener,
   World
 } from 'classic2d';
-import { BodyHandler, UserData } from './synchronizer';
+import { BodyHandler } from './synchronize';
+import { UserData } from './synchronizer';
 
 export class ContactListener implements BaseContactListener<UserData> {
   private world: World;

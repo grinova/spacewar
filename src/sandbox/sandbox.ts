@@ -5,12 +5,12 @@ import { SyncData, UserData, SyncInvoker } from '../game/synchronizer';
 import { Invoker } from '../net/invoker';
 import { WorldData } from '../serializers/world';
 
-export interface Actions<T extends SyncInvoker<WorldData>> {
+export interface Actions<T extends SyncInvoker> {
   preReset?: void | ((invoker: void | T) => void);
   postReset?: void | ((invoker: T) => void);
 }
 
-class SandboxHandler<T extends SyncInvoker<WorldData>> {
+class SandboxHandler<T extends SyncInvoker> {
   private invokerCreator: InvokerCreator<T>;
   private actions?: void | Actions<T>;
   private world: void | World<UserData>;
@@ -101,9 +101,9 @@ class SandboxHandler<T extends SyncInvoker<WorldData>> {
   };
 }
 
-export type InvokerCreator<T extends SyncInvoker<WorldData>> = () => T;
+export type InvokerCreator<T extends SyncInvoker> = () => T;
 
-export function run<T extends SyncInvoker<WorldData>>(creator: InvokerCreator<T>, a?: void | Actions<T>): void {
+export function run<T extends SyncInvoker>(creator: InvokerCreator<T>, a?: void | Actions<T>): void {
   const actions = new SandboxHandler(creator, a);
 
   const { sandbox } = createSandbox<UserData>({

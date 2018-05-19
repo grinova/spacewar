@@ -5,8 +5,7 @@ import {
   Vec2,
   World
 } from 'classic2d';
-import { SyncData, UserData } from './synchronizer';
-import { SynchronizerHandlers } from './synchronizer';
+import { UserData } from './synchronizer';
 import { BodyData } from '../serializers/body';
 import { ContactData } from '../serializers/contact';
 import { WorldData } from '../serializers/world';
@@ -50,12 +49,12 @@ function syncBody(body: Body, b: BodyData): void {
   body.synchronize();
 }
 
-function syncBodies(world: World<UserData>, bodiesData: BodyData[], handlers?: void | SynchronizerHandlers): void {
+function syncBodies(world: World<UserData>, bodiesData: BodyData[], handlers: WorldSyncHandlers): void {
   const bodies = world.getBodies().slice();
   for (const body of bodies) {
     if (bodiesData.every(b => b.userData.id !== body.userData.id)) {
       world.destroyBody(body);
-      handlers && handlers.onBodyDestroy && handlers.onBodyDestroy(body);
+      handlers.onBodyDestroy(body);
     }
   }
   for (const b of bodiesData) {
@@ -64,7 +63,7 @@ function syncBodies(world: World<UserData>, bodiesData: BodyData[], handlers?: v
       syncBody(body, b);
     } else {
       const body = createBody(b, world);
-      handlers && handlers.onBodyCreate && handlers.onBodyCreate(body);
+      handlers.onBodyCreate(body);
     }
   }
 }
@@ -95,8 +94,14 @@ function syncContacts(world: World<UserData>, contactsData: ContactData[]): void
   }
 }
 
+export type BodyHandler = (body: Body<UserData>) => void;
+interface WorldSyncHandlers {
+  onBodyCreate: BodyHandler;
+  onBodyDestroy: BodyHandler;
+}
+
 // TODO: data: WorldData
-export function synchronize(world: World<UserData>, data: SyncData<WorldData>, handlers?: void | SynchronizerHandlers): void {
-  syncBodies(world, data.data.bodies, handlers);
-  syncContacts(world, data.data.contacts);
+export function synchronize(world: World<UserData>, data: WorldData, handlers: WorldSyncHandlers): void {
+  syncBodies(world, data.bodies, handlers);
+  syncContacts(world, data.contacts);
 }

@@ -6,7 +6,13 @@ import { Controller } from './controller/controller';
 import { RocketController } from './controller/rocket-controller';
 import { ShipController } from './controller/ship-controller';
 import { Session } from './session';
-import { SyncInvoker, UserData } from './synchronizer';
+import { synchronize } from './synchronize';
+import {
+  Synchronizer,
+  SyncInvoker,
+  UserData
+} from './synchronizer';
+import { ControllerData } from '../serializers/controller';
 
 export interface GameHandlers {
   onStart?: void | ((ship: ShipController) => void);
@@ -15,7 +21,7 @@ export interface GameHandlers {
 
 export class GameSession {
   private userWorld: World<UserData>;
-  private invoker: SyncInvoker<WorldData>;
+  private invoker: SyncInvoker;
   private handlers: void | GameHandlers;
 
   private contactListener: ContactListener;
@@ -23,7 +29,7 @@ export class GameSession {
   private ship: void | ShipController;
   private controllers: Controller[] = [];
 
-  constructor(userWorld: World<UserData>, invoker: SyncInvoker<WorldData>, handlers?: void | GameHandlers) {
+  constructor(userWorld: World<UserData>, invoker: SyncInvoker, handlers?: void | GameHandlers) {
     this.userWorld = userWorld;
     this.invoker = invoker;
     this.handlers = handlers;
@@ -62,13 +68,17 @@ export class GameSession {
   }
 
   private createSession(): Session {
-    const handlers = {
-      onConnect: this.handleSessionConnect,
-      onDisconnect: this.handleSessionDisconnect,
-      onBodyCreate: this.handleBodyCreate,
-      onBodyDestroy: this.handleBodyDestroy
+    const synchronizerHandlers = {
+      onSyncWorld: this.handleSyncWorld,
+      onSyncController: this.handleSyncController,
+      onError: this.handleError
     };
-    return new Session(this.userWorld, this.invoker, handlers);
+    const sessionHandlers = {
+      onConnect: this.handleSessionConnect,
+      onDisconnect: this.handleSessionDisconnect
+    };
+    const synchronizer = new Synchronizer(this.invoker, synchronizerHandlers);
+    return new Session(synchronizer, sessionHandlers);
   }
 
   private resetShip(): void {
@@ -119,5 +129,19 @@ export class GameSession {
         // TODO: корабль противника
       }
     }
+  };
+
+  private handleSyncController = (data: ControllerData): void => {
+  };
+
+  private handleSyncWorld = (data: WorldData): void => {
+    const handlers = {
+      onBodyCreate: this.handleBodyCreate,
+      onBodyDestroy: this.handleBodyDestroy
+    };
+    synchronize(this.userWorld, data, handlers);
+  };
+
+  private handleError = (error: string): void => {
   };
 }

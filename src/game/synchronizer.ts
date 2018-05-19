@@ -1,6 +1,7 @@
-import { Body, World } from 'classic2d';
 import { Observer } from '../common/observable';
 import { Invoker } from '../net/invoker';
+import { ControllerData } from '../serializers/controller';
+import { WorldData } from '../serializers/world';
 
 export type ObjectType = 'arena' | 'ship' | 'rocket' | 'black-hole';
 
@@ -40,41 +41,48 @@ interface CommonUserData {
 
 export type UserData = CommonUserData | ShipUserData | RocketUserData;
 
-export type MessageType = 'world-data' | 'error';
-
-export interface SyncData<T> {
-  type: MessageType;
-  data: T;
-  error?: string;
+export interface SyncData<T, D> {
+  type: T;
+  data: D;
 }
 
-export type SyncInvoker<T> = Invoker<TransmitData, SyncData<T>>;
+type WorldSyncData = SyncData<'world-sync', WorldData>;
+type ControllerSyncData = SyncData<'controller-sync', ControllerData>;
+type ErrorSyncData = SyncData<'error', string>;
 
-export type Synchronize<T> = (world: World<UserData>, data: SyncData<T>, handlers?: void | SynchronizerHandlers) => void;
+export type ReceiveData = WorldSyncData | ControllerSyncData | ErrorSyncData;
 
-export type BodyHandler = (body: Body<UserData>) => void;
+export type SyncInvoker = Invoker<TransmitData, ReceiveData>;
 
+export type OnReceive<T> = (data: T) => void;
 export interface SynchronizerHandlers {
-  onBodyCreate?: void | BodyHandler;
-  onBodyDestroy?: void | BodyHandler;
+  onSyncWorld: OnReceive<WorldData>;
+  onSyncController: OnReceive<ControllerData>;
+  onError: OnReceive<string>;
 }
 
-export class Synchronizer<T>
-implements Observer<SyncData<T>> {
-  private world: World<UserData>;
-  private invoker: SyncInvoker<T>;
-  private synchronize: Synchronize<T>;
-  private handlers?: void | SynchronizerHandlers;
+export class Synchronizer
+implements Observer<ReceiveData> {
+  private invoker: SyncInvoker;
+  private handlers: SynchronizerHandlers;
 
-  constructor(world: World<UserData>, invoker: SyncInvoker<T>, synchronize: Synchronize<T>, handlers?: void | SynchronizerHandlers) {
-    this.world = world;
+  constructor(invoker: SyncInvoker, handlers: SynchronizerHandlers) {
     this.invoker = invoker;
-    this.synchronize = synchronize;
     this.handlers = handlers;
   }
 
-  notify(data: SyncData<T>): void {
-    this.synchronize(this.world, data, this.handlers);
+  notify(data: ReceiveData): void {
+    switch (data.type) {
+      case 'world-sync':
+        this.handlers.onSyncWorld(data.data);
+        break;
+      case 'controller-sync':
+        this.handlers.onSyncController(data.data);
+        break;
+      case 'error':
+        this.handlers.onError(data.data);
+        break;
+    }
   }
 
   start(): void {

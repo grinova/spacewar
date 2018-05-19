@@ -1,26 +1,17 @@
-import { World } from 'classic2d';
 import { WorldData } from 'serializers/world';
-import { synchronize } from './synchronize';
-import { SynchronizerHandlers } from './synchronizer';
-import {
-  Synchronizer,
-  SyncInvoker,
-  UserData
-} from './synchronizer';
+import { Synchronizer } from './synchronizer';
 
-export interface SessionHandlers extends BaseSessionHandlers, SynchronizerHandlers {}
-
-interface BaseSessionHandlers {
+ export interface SessionHandlers {
   onConnect?: void | (() => void);
   onDisconnect?: void | (() => void);
 }
 
 export class Session {
-  private synchronizer: Synchronizer<WorldData>;
-  private handlers?: void | BaseSessionHandlers;
+  private synchronizer: Synchronizer;
+  private handlers?: void | SessionHandlers;
 
-  constructor(world: World<UserData>, invoker: SyncInvoker<WorldData>, handlers?: void | SessionHandlers) {
-    this.synchronizer = new Synchronizer(world, invoker, synchronize, handlers);
+  constructor(synchronizer: Synchronizer, handlers?: void | SessionHandlers) {
+    this.synchronizer = synchronizer;
     this.handlers = handlers;
   }
 

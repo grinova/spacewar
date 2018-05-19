@@ -1,7 +1,7 @@
 import { ContactData } from '../../serializers/contact';
 
 export const sample = {
-    "type": "world-data",
+    "type": "world-sync",
     "data": {
         "bodies": [
             {

@@ -1,10 +1,9 @@
 import { World } from 'classic2d';
-import { WorldData } from 'serializers/world';
 import { ObservableImpl } from '../../common/observable';
 import { ContactListener } from '../../game/contact-listener';
 import { GameSession } from '../../game/game-session';
 import {
-  SyncData,
+  ReceiveData,
   TransmitData,
   UserData
 } from '../../game/synchronizer';
@@ -15,14 +14,14 @@ import { serializeWorld } from '../serializers/world';
 import { Timer } from '../timer/timer';
 
 class FakeInvoker
-extends ObservableImpl<SyncData<WorldData>>
-implements Invoker<TransmitData, SyncData<WorldData>> {
+extends ObservableImpl<ReceiveData>
+implements Invoker<TransmitData, ReceiveData> {
   sendData(_data: TransmitData): void {}
 }
 
 export class InvokerSandbox
-extends ObservableImpl<SyncData<WorldData>>
-implements Invoker<TransmitData, SyncData<WorldData>> {
+extends ObservableImpl<ReceiveData>
+implements Invoker<TransmitData, ReceiveData> {
   private static STEP_TIMEOUT = 1000 / 60;
   private static SYNC_TIMEOUT = 1000 / 5;
 
@@ -65,8 +64,8 @@ implements Invoker<TransmitData, SyncData<WorldData>> {
 
   private handleSync = (time: number): void => {
     const worldData = serializeWorld(this.world);
-    const data: SyncData<WorldData> = {
-      type: 'world-data',
+    const data = {
+      type: 'world-sync',
       data: worldData
     };
     this.notifyObservers(JSON.parse(JSON.stringify(data)));
