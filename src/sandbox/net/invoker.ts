@@ -2,7 +2,7 @@ import { World } from 'classic2d';
 import { WorldData } from 'serializers/world';
 import { ObservableImpl } from '../../common/observable';
 import { ContactListener } from '../../game/contact-listener';
-import { Game } from '../../game/game';
+import { GameSession } from '../../game/game-session';
 import {
   SyncData,
   TransmitData,
@@ -28,7 +28,7 @@ implements Invoker<TransmitData, SyncData<WorldData>> {
 
   private world: World<UserData> = new World<UserData>();
   private fakeInvoker: FakeInvoker = new FakeInvoker();
-  private game: Game = new Game(this.world, this.fakeInvoker);
+  private game: GameSession = new GameSession(this.world, this.fakeInvoker);
   private contactListener: ContactListener = new ContactListener(this.world);
   private stepTimer: Timer;
   private syncTimer: Timer;

@@ -1,6 +1,6 @@
 import { World } from 'classic2d';
 import { createSandbox, Sandbox } from 'classic2d-sandbox';
-import { Game } from '../game/game';
+import { GameSession } from '../game/game-session';
 import { SyncData, UserData, SyncInvoker } from '../game/synchronizer';
 import { Invoker } from '../net/invoker';
 import { WorldData } from '../serializers/world';
@@ -15,7 +15,7 @@ class SandboxHandler<T extends SyncInvoker<WorldData>> {
   private actions?: void | Actions<T>;
   private world: void | World<UserData>;
   private sandbox: void | Sandbox<UserData>;
-  private game: void | Game;
+  private game: void | GameSession;
   private invoker: void | T;
 
   constructor(invokerCreator: InvokerCreator<T>, actions?: void | Actions<T>) {
@@ -91,7 +91,7 @@ class SandboxHandler<T extends SyncInvoker<WorldData>> {
       return;
     }
     this.invoker = this.invokerCreator();
-    this.game = new Game(this.world, this.invoker, { onEnd: this.handleGameEnd });
+    this.game = new GameSession(this.world, this.invoker, { onEnd: this.handleGameEnd });
     this.game.start();
     this.actions && this.actions.postReset && this.actions.postReset(this.invoker);
   };

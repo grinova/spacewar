@@ -13,7 +13,7 @@ export interface GameHandlers {
   onEnd?: void | (() => void);
 }
 
-export class Game {
+export class GameSession {
   private userWorld: World<UserData>;
   private invoker: SyncInvoker<WorldData>;
   private handlers: void | GameHandlers;
