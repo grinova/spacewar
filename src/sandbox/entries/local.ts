@@ -1,14 +1,17 @@
+import { IDS } from '../../game/consts';
 import { Controller } from '../../game/controller/controller';
 import { InvokerSandbox } from '../net/invoker';
+import { Server } from '../net/server';
 import { run } from '../sandbox';
 
 window.onload = () => {
-  run(() => new InvokerSandbox(), {
-    preReset: invoker => {
-      invoker && invoker.stop();
+  const server = new Server();
+  run(() => server.createInvoker(IDS.SHIP_A), {
+    preReset: () => {
+      server.stop();
     },
-    postReset: invoker => {
-      invoker.run();
+    postReset: () => {
+      server.run();
     }
   });
 };

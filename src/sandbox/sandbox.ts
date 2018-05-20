@@ -101,7 +101,7 @@ class SandboxHandler<T extends SyncInvoker> {
       return;
     }
     this.invoker = this.invokerCreator();
-    this.game = new GameSession(this.world, this.invoker, { onEnd: this.handleGameEnd });
+    this.game = new GameSession(this.world, this.invoker, IDS.SHIP_A, { onEnd: this.handleGameEnd });
     this.game.start();
     this.actions && this.actions.postReset && this.actions.postReset(this.invoker);
   };

@@ -26,7 +26,7 @@ export interface GameHandlers {
 export class GameSession {
   private userWorld: World<UserData>;
   private invoker: SyncInvoker;
-  private userShipId: string = IDS.SHIP_A;
+  private userShipId: string;
   private handlers: void | GameHandlers;
 
   private contactListener: ContactListener;
@@ -35,9 +35,10 @@ export class GameSession {
   private controllers: Controller[] = [];
   private synchronizers: Map<string, ControllerSynchronizer> = new Map<string, ControllerSynchronizer>();
 
-  constructor(userWorld: World<UserData>, invoker: SyncInvoker, handlers?: void | GameHandlers) {
+  constructor(userWorld: World<UserData>, invoker: SyncInvoker, userShipId?: string, handlers?: void | GameHandlers) {
     this.userWorld = userWorld;
     this.invoker = invoker;
+    this.userShipId = userShipId;
     this.handlers = handlers;
     this.contactListener = new ContactListener(this.userWorld, this.handleBodyDestroy);
     this.userWorld.setContactListener(this.contactListener);
