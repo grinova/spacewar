@@ -41,10 +41,10 @@ export class ContactListener implements BaseContactListener<UserData> {
     }
   }
 
-  endContact(contact: Contact<UserData>): void {
+  endContact(_contact: Contact<UserData>): void {
   }
 
-  preSolve(contact: Contact<UserData>): void {
+  preSolve(_contact: Contact<UserData>): void {
   }
 
   private onDestroy(body: Body): void {

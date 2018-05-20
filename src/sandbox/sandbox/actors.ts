@@ -71,7 +71,7 @@ function createActors(world: World, count: number, arenaRadius: number): void {
 function createBodies(world: World): void {
   const ARENA_RADIUS = 3;
   const ACTORS_COUNT = 20;
-  const arena = createArena(world, ARENA_RADIUS);
+  createArena(world, ARENA_RADIUS);
   createActors(world, ACTORS_COUNT, ARENA_RADIUS);
 }
 

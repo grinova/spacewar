@@ -1,12 +1,7 @@
-import { BodyType } from 'classic2d';
 import { PointData } from './point';
-import { ObjectType, UserData } from '../game/synchronizer';
+import { UserData } from '../game/synchronizer';
 
-type BodyTypeData = 'static' | 'dynamic';
-
-export function serializeBodyType(type: BodyType): BodyTypeData {
-  return BodyType[type] as BodyTypeData;
-}
+export type BodyTypeData = 'static' | 'dynamic';
 
 export interface BodyData {
   userData: UserData;

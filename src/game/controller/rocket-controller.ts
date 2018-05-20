@@ -8,11 +8,9 @@ export class RocketController implements Controller {
   private static readonly FORCE = 1;
 
   private rocket: Rocket;
-  private owner: string;
 
-  constructor(rocket: Rocket, owner: string) {
+  constructor(rocket: Rocket) {
     this.rocket = rocket;
-    this.owner = owner;
   }
 
   getId(): string {

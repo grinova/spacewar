@@ -1,6 +1,10 @@
 import { Body, BodyType } from 'classic2d';
 import { UserData } from '../../game/synchronizer';
-import { BodyData, serializeBodyType } from '../../serializers/body';
+import { BodyData, BodyTypeData } from '../../serializers/body';
+
+export function serializeBodyType(type: BodyType): BodyTypeData {
+  return BodyType[type] as BodyTypeData;
+}
 
 export function serializeBody(body: Body<UserData>): BodyData {
   const {
@@ -10,7 +14,7 @@ export function serializeBody(body: Body<UserData>): BodyData {
   const angle = body.getAngle();
   const radius = Math.abs(body.getRadius());
   return {
-    userData: body.userData,
+    userData,
     type: serializeBodyType(type),
     linearVelocity: { x: lv.x, y: lv.y },
     angularVelocity,

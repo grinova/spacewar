@@ -1,4 +1,3 @@
-import { WorldData } from 'serializers/world';
 import { Synchronizer, SyncInvoker } from './synchronizer';
 
  export interface SessionHandlers {

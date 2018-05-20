@@ -1,15 +1,11 @@
 import {
   Body,
-  CircleShape,
-  Vec2,
-  World
+  Vec2
 } from 'classic2d';
 import { Controller } from './controller';
 import { Timer } from '../../sandbox/timer/timer';
-import { WorldData } from '../../serializers/world';
 import { IDS } from '../consts';
 import { RocketProps } from '../creators/launch-rocket';
-import { BodyHandler } from '../synchronize';
 import { TransmitData, UserData } from '../synchronizer';
 
 export type Ship = Body<UserData>;

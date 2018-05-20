@@ -25,7 +25,6 @@ function createBody(b: BodyData, world: World<UserData>): Body {
   const shape = new CircleShape();
   shape.radius = b.radius;
   const density = 1.0;
-  const fd = { shape, density };
   const fixtureDef = { shape, density };
   body.setFixture(fixtureDef);
   body.userData = b.userData;

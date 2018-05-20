@@ -1,6 +1,5 @@
 import { Body, World } from 'classic2d';
 import { WorldData } from 'serializers/world';
-import { IDS } from './consts';
 import { ContactListener } from './contact-listener';
 import { Controller } from './controller/controller';
 import { RocketController } from './controller/rocket-controller';
@@ -128,7 +127,7 @@ export class GameSession {
         this.synchronizers.set(userData.id, new ShipSynchronizer(ship));
       }
     } else if (userData.type === 'rocket') {
-      controller = new RocketController(body, userData.properties.owner);
+      controller = new RocketController(body);
     }
     controller && this.controllers.push(controller);
   };
@@ -176,6 +175,6 @@ export class GameSession {
     synchronize(this.userWorld, data, handlers);
   };
 
-  private handleError = (error: string): void => {
+  private handleError = (_error: string): void => {
   };
 }

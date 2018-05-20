@@ -3,18 +3,10 @@ import { createSandbox, Sandbox } from 'classic2d-sandbox';
 import { keyDown, keyUp } from './helpers/keyhandlers';
 import { singleShot } from './helpers/wrappers';
 import { IDS } from '../game/consts';
-import { Controller } from '../game/controller/controller';
-import { ShipController } from '../game/controller/ship-controller';
 import { GameSession } from '../game/game-session';
-import {
-  SyncData,
-  SyncInvoker,
-  UserData
-} from '../game/synchronizer';
-import { Invoker } from '../net/invoker';
-import { WorldData } from '../serializers/world';
+import { SyncInvoker, UserData } from '../game/synchronizer';
 
-export interface Actions<T extends SyncInvoker> {
+export interface Actions {
   preReset?: void | (() => void);
   postReset?: void | (() => void);
   disconnect?: void | ((id: string) => void);
@@ -23,13 +15,13 @@ export interface Actions<T extends SyncInvoker> {
 class SandboxHandler<T extends SyncInvoker> {
   private userShipId: string;
   private invokerCreator: InvokerCreator<T>;
-  private actions?: void | Actions<T>;
+  private actions?: void | Actions;
   private world: void | World<UserData>;
   private sandbox: void | Sandbox<UserData>;
   private game: void | GameSession;
   private invoker: void | T;
 
-  constructor(invokerCreator: InvokerCreator<T>, actions?: void | Actions<T>) {
+  constructor(invokerCreator: InvokerCreator<T>, actions?: void | Actions) {
     this.invokerCreator = invokerCreator;
     this.actions = actions;
   }
@@ -98,7 +90,7 @@ class SandboxHandler<T extends SyncInvoker> {
 
 export type InvokerCreator<T extends SyncInvoker> = (id: string) => T;
 
-export function run<T extends SyncInvoker>(creator: InvokerCreator<T>, a?: void | Actions<T>): void {
+export function run<T extends SyncInvoker>(creator: InvokerCreator<T>, a?: void | Actions): void {
   const actions = new SandboxHandler(creator, a);
 
   const { sandbox } = createSandbox<UserData>({

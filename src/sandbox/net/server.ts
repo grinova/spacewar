@@ -102,7 +102,7 @@ extends ObservableImpl<DirectedReceiveData> {
     this.world.step(time);
   };
 
-  private handleSync = (time: number): void => {
+  private handleSync = (_time: number): void => {
     const worldData = serializeWorld(this.world);
     this.notifyObservers({
       id: '',

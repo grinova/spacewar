@@ -4,7 +4,7 @@ import {
   World
 } from 'classic2d';
 import { Rocket } from '../controller/rocket-controller';
-import { Ship, ShipController } from '../controller/ship-controller';
+import { Ship } from '../controller/ship-controller';
 import { UserData } from '../synchronizer';
 
 export interface RocketProps {
