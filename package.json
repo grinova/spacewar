@@ -19,5 +19,9 @@
     "typescript": "^2.8.3",
     "webpack": "^4.8.3",
     "webpack-cli": "^2.1.3"
+  },
+  "dependencies": {
+    "classic2d": "github:grinova/classic2d",
+    "classic2d-sandbox": "github:grinova/classic2d-sandbox"
   }
 }
