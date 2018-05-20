@@ -1,6 +1,7 @@
 import { World } from 'classic2d';
 import { createSandbox, Sandbox } from 'classic2d-sandbox';
 import { keyDown, keyUp } from './helpers/keyhandlers';
+import { singleShot } from './helpers/wrappers';
 import { IDS } from '../game/consts';
 import { Controller } from '../game/controller/controller';
 import { ShipController } from '../game/controller/ship-controller';
@@ -108,11 +109,12 @@ export function run<T extends SyncInvoker>(creator: InvokerCreator<T>, a?: void 
   window.addEventListener('resize', () => {
     sandbox.resize(window.innerWidth, window.innerHeight);
   });
-  window.addEventListener('keydown', (event: KeyboardEvent) => {
-    sandbox.keyDown(event);
-  });
-  window.addEventListener('keyup', (event: KeyboardEvent) => {
-    actions.keyUp(event);
-  });
+  const { keyDown, keyUp } = singleShot(
+    (event: KeyboardEvent) => sandbox.keyDown(event),
+    (event: KeyboardEvent) => actions.keyUp(event),
+    'w', 'a', 's', 'd', ' ', 'r', 't', 'c'
+  );
+  window.addEventListener('keydown', keyDown);
+  window.addEventListener('keyup', keyUp);
   sandbox.run();
 }
