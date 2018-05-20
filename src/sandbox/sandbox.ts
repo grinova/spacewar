@@ -1,7 +1,14 @@
 import { World } from 'classic2d';
 import { createSandbox, Sandbox } from 'classic2d-sandbox';
+import { IDS } from '../game/consts';
+import { Controller } from '../game/controller/controller';
+import { ShipController } from '../game/controller/ship-controller';
 import { GameSession } from '../game/game-session';
-import { SyncData, UserData, SyncInvoker } from '../game/synchronizer';
+import {
+  SyncData,
+  SyncInvoker,
+  UserData
+} from '../game/synchronizer';
 import { Invoker } from '../net/invoker';
 import { WorldData } from '../serializers/world';
 
@@ -31,7 +38,10 @@ class SandboxHandler<T extends SyncInvoker> {
         }
         break;
     }
-    const ship = this.game && this.game.getShipController();
+    if (!this.game) {
+      return;
+    }
+    const ship = this.game.getShipController();
     if (!ship) {
       return;
     }

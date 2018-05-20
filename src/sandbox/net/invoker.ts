@@ -1,6 +1,8 @@
 import { World } from 'classic2d';
 import { ObservableImpl } from '../../common/observable';
+import { IDS } from '../../game/consts';
 import { ContactListener } from '../../game/contact-listener';
+import { ShipController } from '../../game/controller/ship-controller';
 import { GameSession } from '../../game/game-session';
 import {
   ReceiveData,
@@ -37,6 +39,10 @@ implements Invoker<TransmitData, ReceiveData> {
     this.world.setContactListener(this.contactListener);
     this.stepTimer = new Timer(this.handleStep, InvokerSandbox.STEP_TIMEOUT);
     this.syncTimer = new Timer(this.handleSync, InvokerSandbox.SYNC_TIMEOUT);
+  }
+
+  getEnemyShipController(): void | ShipController {
+    return this.game.getController<ShipController>(IDS.SHIP_B);
   }
 
   run(): void {

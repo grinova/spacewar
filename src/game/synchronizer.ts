@@ -47,17 +47,17 @@ export interface SyncData<T, D> {
 }
 
 type WorldSyncData = SyncData<'world-sync', WorldData>;
-type ControllerSyncData = SyncData<'controller-sync', ControllerData>;
+type ControllerActionData = SyncData<'controller-action', ControllerData>;
 type ErrorSyncData = SyncData<'error', string>;
 
-export type ReceiveData = WorldSyncData | ControllerSyncData | ErrorSyncData;
+export type ReceiveData = WorldSyncData | ControllerActionData | ErrorSyncData;
 
 export type SyncInvoker = Invoker<TransmitData, ReceiveData>;
 
 export type OnReceive<T> = (data: T) => void;
 export interface SynchronizerHandlers {
   onSyncWorld: OnReceive<WorldData>;
-  onSyncController: OnReceive<ControllerData>;
+  onActionController: OnReceive<ControllerData>;
   onError: OnReceive<string>;
 }
 
@@ -76,8 +76,8 @@ implements Observer<ReceiveData> {
       case 'world-sync':
         this.handlers.onSyncWorld(data.data);
         break;
-      case 'controller-sync':
-        this.handlers.onSyncController(data.data);
+      case 'controller-action':
+        this.handlers.onActionController(data.data);
         break;
       case 'error':
         this.handlers.onError(data.data);

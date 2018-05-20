@@ -4,7 +4,8 @@ import { IDS } from './consts';
 import { ContactListener } from './contact-listener';
 import { Controller } from './controller/controller';
 import { RocketController } from './controller/rocket-controller';
-import { ShipController } from './controller/ship-controller';
+import { Ship, ShipController } from './controller/ship-controller';
+import { launchRocket, RocketProps } from './creators/launch-rocket';
 import { Session } from './session';
 import { synchronize } from './synchronize';
 import {
@@ -12,7 +13,10 @@ import {
   SyncInvoker,
   UserData
 } from './synchronizer';
+import { TransmitData } from './synchronizer';
 import { ControllerData } from '../serializers/controller';
+import { ControllerSynchronizer } from '../synchronization/controller-synchronizer';
+import { ShipSynchronizer } from '../synchronization/ship-synchronizer';
 
 export interface GameHandlers {
   onStart?: void | ((ship: ShipController) => void);
@@ -22,12 +26,14 @@ export interface GameHandlers {
 export class GameSession {
   private userWorld: World<UserData>;
   private invoker: SyncInvoker;
+  private userShipId: string = IDS.SHIP_A;
   private handlers: void | GameHandlers;
 
   private contactListener: ContactListener;
   private session: void | Session;
   private ship: void | ShipController;
   private controllers: Controller[] = [];
+  private synchronizers: Map<string, ControllerSynchronizer> = new Map<string, ControllerSynchronizer>();
 
   constructor(userWorld: World<UserData>, invoker: SyncInvoker, handlers?: void | GameHandlers) {
     this.userWorld = userWorld;
@@ -45,6 +51,10 @@ export class GameSession {
     this.contactListener.destroy();
     this.userWorld.setContactListener(null);
     this.closeSession();
+  }
+
+  getController<C extends Controller>(id: string): void | C {
+    return this.controllers.find(c => c.getId() === id) as C;
   }
 
   getSession(): Session {
@@ -70,7 +80,7 @@ export class GameSession {
   private createSession(): Session {
     const synchronizerHandlers = {
       onSyncWorld: this.handleSyncWorld,
-      onSyncController: this.handleSyncController,
+      onActionController: this.handleActionController,
       onError: this.handleError
     };
     const sessionHandlers = {
@@ -104,11 +114,19 @@ export class GameSession {
     const { userData } = body;
     let controller: void | Controller;
     if (userData.type === 'ship') {
-      const ship = controller = new ShipController(body, this.userWorld, this.invoker, this.handleBodyCreate);
-      if (userData.id === IDS.SHIP_A) {
+      if (userData.id === this.userShipId) {
+        const handlers = {
+          onSend: this.handleShipSend,
+          onLaunchRocket: this.handleShipLaunchRocket
+        };
+        const ship = controller = new ShipController(body, handlers);
         this.setShip(ship);
-      } else if (userData.id === IDS.SHIP_B) {
-        // TODO: корабль противника
+      } else {
+        const handlers = {
+          onLaunchRocket: this.handleShipLaunchRocket
+        };
+        const ship = controller = new ShipController(body, handlers);
+        this.synchronizers.set(userData.id, new ShipSynchronizer(ship));
       }
     } else if (userData.type === 'rocket') {
       controller = new RocketController(body, userData.properties.owner);
@@ -123,15 +141,32 @@ export class GameSession {
       this.controllers.splice(index, 1);
     }
     if (userData.type === 'ship') {
-      if (userData.id === IDS.SHIP_A) {
+      if (userData.id === this.userShipId) {
         this.resetShip();
-      } else if (userData.id === IDS.SHIP_B) {
-        // TODO: корабль противника
+      } else {
+        this.synchronizers.delete(userData.id);
       }
     }
   };
 
-  private handleSyncController = (data: ControllerData): void => {
+  private handleShipLaunchRocket = (
+    ship: Ship,
+    props: RocketProps
+  ): void => {
+    const rocket = launchRocket(this.userWorld, ship, props);
+    this.handleBodyCreate(rocket);
+  };
+
+  private handleShipSend = (data: TransmitData): void => {
+    this.invoker.sendData(data);
+  };
+
+  private handleActionController = (data: ControllerData): void => {
+    if (!this.synchronizers.has(data.id)) {
+      return;
+    }
+    const synchronizer = this.synchronizers.get(data.id);
+    synchronizer.interact(data.data);
   };
 
   private handleSyncWorld = (data: WorldData): void => {

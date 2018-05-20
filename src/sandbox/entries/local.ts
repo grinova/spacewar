@@ -1,5 +1,6 @@
-import { run } from '../sandbox';
+import { Controller } from '../../game/controller/controller';
 import { InvokerSandbox } from '../net/invoker';
+import { run } from '../sandbox';
 
 window.onload = () => {
   run(() => new InvokerSandbox(), {
