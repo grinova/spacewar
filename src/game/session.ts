@@ -1,5 +1,5 @@
 import { WorldData } from 'serializers/world';
-import { Synchronizer } from './synchronizer';
+import { Synchronizer, SyncInvoker } from './synchronizer';
 
  export interface SessionHandlers {
   onConnect?: void | (() => void);
@@ -25,5 +25,9 @@ export class Session {
     this.synchronizer.stop();
     const onDisconnect = this.handlers && this.handlers.onDisconnect;
     onDisconnect && onDisconnect();
+  }
+
+  getInvoker(): SyncInvoker {
+    return this.synchronizer.getInvoker();
   }
 }

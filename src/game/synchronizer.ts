@@ -71,6 +71,10 @@ implements Observer<ReceiveData> {
     this.handlers = handlers;
   }
 
+  getInvoker(): SyncInvoker {
+    return this.invoker;
+  }
+
   notify(data: ReceiveData): void {
     switch (data.type) {
       case 'world-sync':

@@ -1,5 +1,6 @@
 import { World } from 'classic2d';
 import { createSandbox, Sandbox } from 'classic2d-sandbox';
+import { keyDown, keyUp } from './helpers/keyhandlers';
 import { IDS } from '../game/consts';
 import { Controller } from '../game/controller/controller';
 import { ShipController } from '../game/controller/ship-controller';
@@ -13,11 +14,13 @@ import { Invoker } from '../net/invoker';
 import { WorldData } from '../serializers/world';
 
 export interface Actions<T extends SyncInvoker> {
-  preReset?: void | ((invoker: void | T) => void);
-  postReset?: void | ((invoker: T) => void);
+  preReset?: void | (() => void);
+  postReset?: void | (() => void);
+  disconnect?: void | ((id: string) => void);
 }
 
 class SandboxHandler<T extends SyncInvoker> {
+  private userShipId: string;
   private invokerCreator: InvokerCreator<T>;
   private actions?: void | Actions<T>;
   private world: void | World<UserData>;
@@ -37,47 +40,17 @@ class SandboxHandler<T extends SyncInvoker> {
           this.reset(this.world, this.sandbox, true)
         }
         break;
-    }
-    if (!this.game) {
-      return;
-    }
-    const ship = this.game.getShipController();
-    if (!ship) {
-      return;
-    }
-    switch (event.key) {
-      case 'w':
-        ship.setThrottle(1);
-        break;
-      case 's':
-        ship.setThrottle(0);
-        break;
-      case 'a':
-        ship.setTorque(1);
-        break;
-      case 'd':
-        ship.setTorque(-1);
-        break;
-      case ' ':
-        ship.fire();
+      case 'c':
+        if (this.world) {
+          this.changeShip(this.world);
+        }
         break;
     }
+    this.game && keyDown(event, this.game, 'w', 's', 'a', 'd', ' ');
   };
 
   keyUp = (event: KeyboardEvent): void => {
-    const ship = this.game && this.game.getShipController();
-    if (!ship) {
-      return;
-    }
-    switch (event.key) {
-      case 'w':
-        ship.setThrottle(0);
-        break;
-      case 'a':
-      case 'd':
-        ship.setTorque(0);
-        break;
-    }
+    this.game && keyUp(event, this.game, 'w', 'a', 'd');
   };
 
   init = (world: World<UserData>, sandbox: Sandbox<UserData>) => {
@@ -89,29 +62,40 @@ class SandboxHandler<T extends SyncInvoker> {
   };
 
   reset = (world: World<UserData>, sandbox: Sandbox<UserData>, stop?: boolean): void => {
-    this.actions && this.actions.preReset && this.actions.preReset(this.invoker);
+    this.actions && this.actions.preReset && this.actions.preReset();
     this.world = world;
     this.sandbox = sandbox;
     sandbox.zoom(12);
-    if (this.game) {
-      this.game.destroy();
-    }
     if (stop) {
       sandbox.stop();
       return;
     }
-    this.invoker = this.invokerCreator();
-    this.game = new GameSession(this.world, this.invoker, IDS.SHIP_A, { onEnd: this.handleGameEnd });
-    this.game.start();
-    this.actions && this.actions.postReset && this.actions.postReset(this.invoker);
+    if (this.game) {
+      this.game.destroy();
+      this.game = null;
+    }
+    this.changeShip(this.world);
+    this.actions && this.actions.postReset && this.actions.postReset();
   };
+
+  private changeShip(world: World<UserData>): void {
+    this.actions && this.actions.disconnect && this.actions.disconnect(this.userShipId);
+    world.clear();
+    this.userShipId = { [IDS.SHIP_A]: IDS.SHIP_B, [IDS.SHIP_B]: IDS.SHIP_A }[this.userShipId] || IDS.SHIP_A;
+    this.invoker = this.invokerCreator(this.userShipId);
+    if (!this.game) {
+      this.game = new GameSession(world, { onEnd: this.handleGameEnd });
+    }
+    this.game.close();
+    this.game.connect(this.invoker, this.userShipId);
+  }
 
   private handleGameEnd = (): void => {
     this.sandbox && this.sandbox.reset();
   };
 }
 
-export type InvokerCreator<T extends SyncInvoker> = () => T;
+export type InvokerCreator<T extends SyncInvoker> = (id: string) => T;
 
 export function run<T extends SyncInvoker>(creator: InvokerCreator<T>, a?: void | Actions<T>): void {
   const actions = new SandboxHandler(creator, a);

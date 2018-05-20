@@ -6,10 +6,11 @@ import { ShipController } from '../../game/controller/ship-controller';
 import { GameSession } from '../../game/game-session';
 import {
   ReceiveData,
+  SyncInvoker,
   TransmitData,
   UserData
 } from '../../game/synchronizer';
-import { SyncInvoker } from '../../game/synchronizer';
+import { WorldData } from '../../serializers/world';
 import { interact } from '../sandbox/interact';
 import { sample } from '../sandbox/reset-world.sample';
 import { serializeWorld } from '../serializers/world';
@@ -21,8 +22,13 @@ implements SyncInvoker {
   sendData(_data: TransmitData): void {}
 }
 
+export interface DirectedReceiveData {
+  id: string;
+  data: ReceiveData;
+}
+
 export class Server
-extends ObservableImpl<ReceiveData> {
+extends ObservableImpl<DirectedReceiveData> {
   private static STEP_TIMEOUT = 1000 / 60;
   private static SYNC_TIMEOUT = 1000 / 5;
 
@@ -47,20 +53,35 @@ extends ObservableImpl<ReceiveData> {
 
   createInvoker(id: string): SyncInvoker {
     const invoker = new InvokerSandbox(this, id);
+    this.invokers.set(id, invoker);
     this.register(invoker);
     return invoker;
   }
 
-  sendData(subjectId: string, data: TransmitData): void {
-    const ship = this.game && this.game.getController<ShipController>(subjectId);
+  disconnectUser(id: string): void {
+    this.unregister(this.invokers.get(id));
+    this.invokers.delete(id);
+  }
+
+  sendData(id: string, data: TransmitData): void {
+    const ship = this.game && this.game.getController<ShipController>(id);
     ship && interact(data, ship);
+    if (data.type === 'ship-control') {
+      this.notifyObservers({
+        id,
+        data: {
+          type: 'controller-action',
+          data: { id, data: JSON.parse(JSON.stringify(data)) as TransmitData }
+        }
+      });
+    }
   }
 
   run(): void {
     const contactListener = new ContactListener(this.world);
     this.world.setContactListener(contactListener);
-    this.game = new GameSession(this.world, this.fakeInvoker);
-    this.game.start();
+    this.game = new GameSession(this.world);
+    this.game.connect(this.fakeInvoker);
     this.fakeInvoker.notifyObservers(sample as any);
     this.stepTimer.run();
     this.syncTimer.run();
@@ -69,11 +90,11 @@ extends ObservableImpl<ReceiveData> {
   stop(): void {
     this.stepTimer.stop();
     this.syncTimer.stop();
-    for (const id in this.invokers) {
-      this.unregister(this.invokers.get(id));
-    }
-    this.invokers.clear();
+    this.invokers.forEach((_, id) => {
+      this.disconnectUser(id);
+    });
     this.game && this.game.destroy();
+    this.world.clear();
   }
 
   private handleStep = (time: number): void => {
@@ -83,10 +104,12 @@ extends ObservableImpl<ReceiveData> {
 
   private handleSync = (time: number): void => {
     const worldData = serializeWorld(this.world);
-    const data = {
-      type: 'world-sync',
-      data: worldData
-    };
-    this.notifyObservers(JSON.parse(JSON.stringify(data)));
+    this.notifyObservers({
+      id: '',
+      data: {
+        type: 'world-sync',
+        data: JSON.parse(JSON.stringify(worldData)) as WorldData
+      }
+    });
   };
 }

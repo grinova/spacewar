@@ -25,7 +25,6 @@ export interface GameHandlers {
 
 export class GameSession {
   private userWorld: World<UserData>;
-  private invoker: SyncInvoker;
   private userShipId: string;
   private handlers: void | GameHandlers;
 
@@ -35,41 +34,40 @@ export class GameSession {
   private controllers: Controller[] = [];
   private synchronizers: Map<string, ControllerSynchronizer> = new Map<string, ControllerSynchronizer>();
 
-  constructor(userWorld: World<UserData>, invoker: SyncInvoker, userShipId?: string, handlers?: void | GameHandlers) {
+  constructor(userWorld: World<UserData>, handlers?: void | GameHandlers) {
     this.userWorld = userWorld;
-    this.invoker = invoker;
-    this.userShipId = userShipId;
     this.handlers = handlers;
     this.contactListener = new ContactListener(this.userWorld, this.handleBodyDestroy);
     this.userWorld.setContactListener(this.contactListener);
   }
 
-  closeSession(): void {
+  close(): void {
     this.session && this.session.disconnect();
+  }
+
+  connect(invoker: SyncInvoker, id: string = ''): Session {
+    this.userShipId = id;
+    const session = this.getSession(invoker);
+    session.connect();
+    return session;
   }
 
   destroy(): void {
     this.contactListener.destroy();
     this.userWorld.setContactListener(null);
-    this.closeSession();
+    this.close();
   }
 
   getController<C extends Controller>(id: string): void | C {
     return this.controllers.find(c => c.getId() === id) as C;
   }
 
-  getSession(): Session {
-    return (this.session = this.session || this.createSession());
+  getSession(invoker: SyncInvoker): Session {
+    return (this.session = this.session || this.createSession(invoker));
   }
 
   getShipController(): void | ShipController {
     return this.ship;
-  }
-
-  start(): Session {
-    const session = this.getSession();
-    session.connect();
-    return session;
   }
 
   step(): void {
@@ -78,7 +76,7 @@ export class GameSession {
     }
   }
 
-  private createSession(): Session {
+  private createSession(invoker: SyncInvoker): Session {
     const synchronizerHandlers = {
       onSyncWorld: this.handleSyncWorld,
       onActionController: this.handleActionController,
@@ -88,7 +86,7 @@ export class GameSession {
       onConnect: this.handleSessionConnect,
       onDisconnect: this.handleSessionDisconnect
     };
-    const synchronizer = new Synchronizer(this.invoker, synchronizerHandlers);
+    const synchronizer = new Synchronizer(invoker, synchronizerHandlers);
     return new Session(synchronizer, sessionHandlers);
   }
 
@@ -159,7 +157,7 @@ export class GameSession {
   };
 
   private handleShipSend = (data: TransmitData): void => {
-    this.invoker.sendData(data);
+    this.session && this.session.getInvoker().sendData(data);
   };
 
   private handleActionController = (data: ControllerData): void => {

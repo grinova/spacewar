@@ -1,11 +1,11 @@
-import { Server } from './server';
+import { DirectedReceiveData, Server } from './server';
 import { ObservableImpl, Observer } from '../../common/observable';
 import { ReceiveData, TransmitData } from '../../game/synchronizer';
 import { Invoker } from '../../net/invoker';
 
 export class InvokerSandbox
 extends ObservableImpl<ReceiveData>
-implements Invoker<TransmitData, ReceiveData>, Observer<ReceiveData> {
+implements Invoker<TransmitData, ReceiveData>, Observer<DirectedReceiveData> {
   private server: Server;
   private id: string;
 
@@ -19,7 +19,9 @@ implements Invoker<TransmitData, ReceiveData>, Observer<ReceiveData> {
     this.server.sendData(this.id, data);
   }
 
-  notify(data: ReceiveData): void {
-    this.notifyObservers(data);
+  notify(data: DirectedReceiveData): void {
+    if (data.id !== this.id) {
+      this.notifyObservers(data.data);
+    }
   }
 }
