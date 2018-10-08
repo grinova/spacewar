@@ -1,6 +1,9 @@
-import { GameInvoker } from '../../game/invoker';
-import { run } from '../sandbox';
+import { WebSocketNet } from 'physics-net'
+import { run } from '../sandbox'
 
 window.onload = () => {
-  run(() => new GameInvoker());
+  run(
+    () => new WebSocketNet(new WebSocket('ws://localhost:3000/ws')),
+    () => null
+  );
 };

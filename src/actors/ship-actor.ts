@@ -32,7 +32,7 @@ extends ControllerActor<UserData, ShipController, ShipMessage> {
       case 'fire':
         if (this.controller.canLaunchRocket()) {
           const ship = this.controller.body
-          spawn(this.creator.create<RocketActorCreatorProps>('rocket', { bodyProps: { ship } }))
+          spawn(this.creator.create<RocketActorCreatorProps<UserData>>('rocket', { bodyProps: { ship } }))
         }
         break
     }

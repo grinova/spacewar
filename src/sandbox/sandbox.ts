@@ -1,10 +1,11 @@
-import { World } from 'classic2d';
-import { createSandbox, Sandbox } from 'classic2d-sandbox';
-import { keyDown, keyUp } from './helpers/keyhandlers';
-import { singleShot } from './helpers/wrappers';
-import { IDS } from '../game/consts';
-import { GameSession } from '../game/game-session';
-import { SyncInvoker, UserData } from '../game/synchronizer';
+import { TimeDelta, World } from 'classic2d'
+import { createSandbox, Sandbox } from 'classic2d-sandbox'
+import { Net } from 'physics-net'
+import { singleShot } from './helpers/wrappers'
+import { ShipMessage } from '../actors/ship-actor'
+import { Client } from '../game/client'
+import { IDS } from '../game/consts'
+import { UserData } from '../game/synchronizer'
 
 export interface Actions {
   preReset?: void | (() => void);
@@ -12,86 +13,91 @@ export interface Actions {
   disconnect?: void | ((id: string) => void);
 }
 
-class SandboxHandler<T extends SyncInvoker> {
+class SandboxHandler {
   private userShipId: string;
-  private invokerCreator: InvokerCreator<T>;
+  private netCreator: NetCreator;
+  private connect: Connect
   private actions?: void | Actions;
   private world: void | World<UserData>;
-  private sandbox: void | Sandbox<UserData>;
-  private game: void | GameSession;
-  private invoker: void | T;
+  private client: void | Client;
+  private net: void | Net;
 
-  constructor(invokerCreator: InvokerCreator<T>, actions?: void | Actions) {
-    this.invokerCreator = invokerCreator;
+  constructor(netCreator: NetCreator, connect: Connect, actions?: void | Actions) {
+    this.netCreator = netCreator;
+    this.connect = connect
     this.actions = actions;
   }
 
   keyDown = (event: KeyboardEvent): void => {
-    switch (event.key) {
-      case 't':
-        if (this.world && this.sandbox) {
-          this.reset(this.world, this.sandbox, true)
-        }
-        break;
-      case 'c':
-        if (this.world) {
-          this.changeShip(this.world);
-        }
-        break;
+    if (!this.client) {
+      return
     }
-    this.game && keyDown(event, this.game, 'w', 's', 'a', 'd', ' ');
+    const sender = this.client.getEventSender()
+    switch (event.key) {
+      case 'w':
+        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'thrust', amount: 1 } })
+        break
+      case 'a':
+        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'torque', amount: 1 } })
+        break
+      case 'd':
+        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'torque', amount: -1 } })
+        break
+      case ' ':
+        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'fire' } })
+        break
+    }
   };
 
   keyUp = (event: KeyboardEvent): void => {
-    this.game && keyUp(event, this.game, 'w', 'a', 'd');
+    if (!this.client) {
+      return
+    }
+    const sender = this.client.getEventSender()
+    switch (event.key) {
+      case 'w':
+        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'thrust', amount: 0 } })
+        break
+      case 'a':
+      case 'd':
+        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'torque', amount: 0 } })
+        break
+    }
   };
 
   init = (world: World<UserData>, sandbox: Sandbox<UserData>) => {
     this.reset(world, sandbox, false);
   };
 
-  preStep = (): void => {
-    this.game && this.game.step();
+  preStep = (time: TimeDelta): void => {
+    this.client && this.client.simulate(time);
   };
 
   reset = (world: World<UserData>, sandbox: Sandbox<UserData>, stop?: boolean): void => {
     this.actions && this.actions.preReset && this.actions.preReset();
     this.world = world;
-    this.sandbox = sandbox;
     sandbox.zoom(12);
     if (stop) {
       sandbox.stop();
       return;
     }
-    if (this.game) {
-      this.game.destroy();
-      this.game = null;
-    }
-    this.changeShip(this.world);
-    this.actions && this.actions.postReset && this.actions.postReset();
-  };
-
-  private changeShip(world: World<UserData>): void {
     this.actions && this.actions.disconnect && this.actions.disconnect(this.userShipId);
-    world.clear();
-    this.userShipId = { [IDS.SHIP_A]: IDS.SHIP_B, [IDS.SHIP_B]: IDS.SHIP_A }[this.userShipId] || IDS.SHIP_A;
-    this.invoker = this.invokerCreator(this.userShipId);
-    if (!this.game) {
-      this.game = new GameSession(world, { onEnd: this.handleGameEnd });
+    this.world.clear();
+    this.userShipId = IDS.SHIP_A
+    this.net = this.netCreator(this.userShipId);
+    if (!this.client) {
+      this.client = new Client(this.world, this.net);
     }
-    this.game.close();
-    this.game.connect(this.invoker, this.userShipId);
-  }
-
-  private handleGameEnd = (): void => {
-    this.sandbox && this.sandbox.reset();
+    this.connect(this.userShipId)
+    this.actions && this.actions.postReset && this.actions.postReset();
   };
 }
 
-export type InvokerCreator<T extends SyncInvoker> = (id: string) => T;
+export type NetCreator = (id: string) => Net
+export type Connect = (id: string) => void
 
-export function run<T extends SyncInvoker>(creator: InvokerCreator<T>, a?: void | Actions): void {
-  const actions = new SandboxHandler(creator, a);
+export function run(creator: NetCreator, connect: Connect, a?: void | Actions): void {
+  const actions = new SandboxHandler(creator, connect, a);
 
   const { sandbox } = createSandbox<UserData>({
     actions,
