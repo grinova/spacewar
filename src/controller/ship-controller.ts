@@ -1,9 +1,8 @@
 import { TimeDelta, Vec2 } from 'classic2d'
 import { BaseController } from 'physics-net'
-import { UserData } from '../data/user-data'
 
 export class ShipController
-extends BaseController<UserData> {
+extends BaseController {
   private static readonly MAX_FORCE = 0.1
   private static readonly MAX_TORQUE = 5
   private static readonly DUMP_ROTATION_COEF = 0.97

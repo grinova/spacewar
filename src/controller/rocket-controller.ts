@@ -1,9 +1,8 @@
 import { TimeDelta, Vec2 } from 'classic2d'
 import { BaseController } from 'physics-net'
-import { UserData } from '../data/user-data'
 
 export class RocketController
-extends BaseController<UserData> {
+extends BaseController {
   private static readonly FORCE = 1
 
   step(_time: TimeDelta): void {

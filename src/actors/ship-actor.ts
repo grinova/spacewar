@@ -7,7 +7,6 @@ import {
 import { ControllerActor, ControllerActorProps } from 'physics-net'
 import { ShipController } from '../controller/ship-controller'
 import { RocketActorCreatorProps } from '../creators/rocket'
-import { UserData } from '../data/user-data'
 
 export type ShipMessage =
   (
@@ -17,10 +16,10 @@ export type ShipMessage =
   ) & Message
 
 export interface ShipActorProps
-extends ControllerActorProps<UserData, ShipController> {}
+extends ControllerActorProps<ShipController> {}
 
 export class ShipActor
-extends ControllerActor<UserData, ShipController, ShipMessage> {
+extends ControllerActor<ShipController, ShipMessage> {
   onMessage(message: ShipMessage, _send: Send, spawn: Spawn, _exit: Exit): void {
     switch (message.type) {
       case 'thrust':
@@ -32,7 +31,10 @@ extends ControllerActor<UserData, ShipController, ShipMessage> {
       case 'fire':
         if (this.controller.canLaunchRocket()) {
           const ship = this.controller.body
-          spawn(this.creator.create<RocketActorCreatorProps<UserData>>('rocket', { bodyProps: { ship } }))
+          if (ship.userData) {
+            const shipId = ship.userData.id
+            spawn(id => this.creator.create<RocketActorCreatorProps>(id, 'rocket', { shipId }))
+          }
         }
         break
     }

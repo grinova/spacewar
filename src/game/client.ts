@@ -1,5 +1,4 @@
 import {
-  Body,
   CircleShape,
   Vec2,
   World
@@ -10,10 +9,9 @@ import { RocketActor, RocketActorProps } from '../actors/rocket-actor'
 import { ShipActor, ShipActorProps } from '../actors/ship-actor'
 import { RocketController } from '../controller/rocket-controller'
 import { ShipController } from '../controller/ship-controller'
-import { UserData } from '../data/user-data'
 
 export class Client
-extends PhysicsClient<UserData> {
+extends PhysicsClient {
   private world: World
 
   constructor(world: World, net: Net) {
@@ -22,9 +20,10 @@ extends PhysicsClient<UserData> {
   }
 
   onConnect = () => {
-    interface ShipBodyProps { position: { x: number, y: number }, angle: number }
+    interface BaseBodyProps { position: { x: number, y: number }, angle: number }
+    interface RocketBodyProps extends BaseBodyProps { id: string }
     this.getBodiesFactory().register('ship', {
-      create: ({ position, angle }: ShipBodyProps) => {
+      create: ({ position, angle, id }: RocketBodyProps) => {
         const RADIUS = 0.05
         const bodyDef = {
           position: new Vec2(position.x, position.y),
@@ -40,14 +39,18 @@ extends PhysicsClient<UserData> {
           density: 1
         }
         body.setFixture(fixtureDef)
-        body.userData = { id: '?', type: 'ship' }
+        body.userData = { id: id, type: 'ship' }
         return body
       }
     })
 
-    interface RocketBodyProps { ship: Body }
+    interface RocketBodyProps { shipId: string }
     this.getBodiesFactory().register('rocket', {
-      create: ({ ship }: RocketBodyProps) => {
+      create: ({ shipId }: RocketBodyProps) => {
+        const ship = this.getBody(shipId)
+        if (!ship) {
+          return
+        }
         const DISTANCE = 0.075
         const VELOCITY = 0.2
         const RADIUS = 0.01
@@ -65,15 +68,15 @@ extends PhysicsClient<UserData> {
         shape.radius = RADIUS
         const fixtureDef = { shape, density: 1 }
         body.setFixture(fixtureDef)
-        body.userData = { id: '?', type: 'rocket' }
+        body.userData = { type: 'rocket' }
         return body
       }
     })
     this.getBodiesFactory().register('arena', {
-      create: (_props: {}) => {
+      create: ({ position, angle }: BaseBodyProps) => {
         const bodyDef = {
-          position: new Vec2(0, 0),
-          angle: 0,
+          position: new Vec2(position.x, position.y),
+          angle: angle,
           linearVelocity: new Vec2(0, 0),
           angularVelocity: 0,
           inverse: true
@@ -89,10 +92,10 @@ extends PhysicsClient<UserData> {
       }
     })
     this.getBodiesFactory().register('black-hole', {
-      create: (_props: {}) => {
+      create: ({ position, angle }: BaseBodyProps) => {
         const bodyDef = {
-          position: new Vec2(0, 0),
-          angle: 0,
+          position: new Vec2(position.x, position.y),
+          angle: angle,
           linearVelocity: new Vec2(0, 0),
           angularVelocity: 0
         }
@@ -107,12 +110,12 @@ extends PhysicsClient<UserData> {
       }
     })
 
-    this.getControllersFactory<UserData>().register('ship', {
+    this.getControllersFactory().register('ship', {
       create: ({ body }) => {
         return new ShipController(body)
       }
     })
-    this.getControllersFactory<UserData>().register('rocket', {
+    this.getControllersFactory().register('rocket', {
       create: ({ body }) => new RocketController(body)
     })
 
@@ -124,4 +127,3 @@ extends PhysicsClient<UserData> {
     })
   }
 }
-
