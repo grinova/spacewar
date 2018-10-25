@@ -1,10 +1,13 @@
 import {
+  Body,
   CircleShape,
+  Contact,
   Vec2,
   World
   } from 'classic2d'
 import { BodyType } from 'classic2d/dist/classic2d/physics/body'
 import { Client as PhysicsClient, Net } from 'physics-net'
+import { ContactListener } from './contact-listener'
 import { RocketActor, RocketActorProps } from '../actors/rocket-actor'
 import { ShipActor, ShipActorProps } from '../actors/ship-actor'
 import { RocketController } from '../controller/rocket-controller'
@@ -17,6 +20,7 @@ extends PhysicsClient {
   constructor(world: World, net: Net) {
     super(net)
     this.world = world
+    this.world.setContactListener(new ContactListener(this.destroyBodyAndContact))
   }
 
   onConnect = () => {
@@ -104,7 +108,7 @@ extends PhysicsClient {
         shape.radius = 0.05
         const fixtureDef = { shape, density: 1 }
         body.setFixture(fixtureDef)
-        body.userData = { id: 'arena', type: 'arena' }
+        body.userData = { id: 'black-hole', type: 'black-hole' }
         body.type = BodyType.static
         return body
       }
@@ -125,5 +129,11 @@ extends PhysicsClient {
     this.getActorsFactory().register('rocket', {
       create: (props: RocketActorProps) => new RocketActor(props)
     })
+  }
+
+  private destroyBodyAndContact = (body: Body, contact: Contact): void => {
+    this.world.destroyBody(body)
+    const contactManager = this.world.getContactManager()
+    contactManager.destroy(contact)
   }
 }
