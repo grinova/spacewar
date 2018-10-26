@@ -86,7 +86,7 @@ class SandboxHandler {
     this.userShipId = IDS.SHIP_A
     this.net = this.netCreator(this.userShipId);
     if (!this.client) {
-      this.client = new Client(this.world, this.net);
+      this.client = new Client(this.net, this.world);
     }
     this.connect(this.userShipId)
     this.actions && this.actions.postReset && this.actions.postReset();

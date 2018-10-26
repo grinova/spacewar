@@ -33,7 +33,7 @@ extends ControllerActor<ShipController, ShipMessage> {
           const ship = this.controller.body
           if (ship.userData) {
             const shipId = ship.userData.id
-            spawn(id => this.creator.create<RocketActorCreatorProps>(id, 'rocket', { shipId }))
+            spawn(id => this.creator.create<RocketActorCreatorProps>(id, 'rocket', { shipId, id }))
           }
         }
         break

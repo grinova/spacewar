@@ -8,6 +8,7 @@ import {
 import { BodyType } from 'classic2d/dist/classic2d/physics/body'
 import { Client as PhysicsClient, Net } from 'physics-net'
 import { ContactListener } from './contact-listener'
+import { UserData } from './synchronizer'
 import { RocketActor, RocketActorProps } from '../actors/rocket-actor'
 import { ShipActor, ShipActorProps } from '../actors/ship-actor'
 import { RocketController } from '../controller/rocket-controller'
@@ -17,17 +18,17 @@ export class Client
 extends PhysicsClient {
   private world: World
 
-  constructor(world: World, net: Net) {
-    super(net)
+  constructor(net: Net, world: World) {
+    super(net, world)
     this.world = world
     this.world.setContactListener(new ContactListener(this.destroyBodyAndContact))
   }
 
   onConnect = () => {
     interface BaseBodyProps { position: { x: number, y: number }, angle: number }
-    interface RocketBodyProps extends BaseBodyProps { id: string }
+    interface ShipBodyProps extends BaseBodyProps { id: string }
     this.getBodiesFactory().register('ship', {
-      create: ({ position, angle, id }: RocketBodyProps) => {
+      create: ({ position, angle, id }: ShipBodyProps) => {
         const RADIUS = 0.05
         const bodyDef = {
           position: new Vec2(position.x, position.y),
@@ -48,9 +49,9 @@ extends PhysicsClient {
       }
     })
 
-    interface RocketBodyProps { shipId: string }
+    interface RocketBodyProps { shipId: string, id: string }
     this.getBodiesFactory().register('rocket', {
-      create: ({ shipId }: RocketBodyProps) => {
+      create: ({ shipId, id }: RocketBodyProps) => {
         const ship = this.getBody(shipId)
         if (!ship) {
           return
@@ -72,7 +73,7 @@ extends PhysicsClient {
         shape.radius = RADIUS
         const fixtureDef = { shape, density: 1 }
         body.setFixture(fixtureDef)
-        body.userData = { type: 'rocket' }
+        body.userData = { id, type: 'rocket' }
         return body
       }
     })
@@ -131,9 +132,14 @@ extends PhysicsClient {
     })
   }
 
-  private destroyBodyAndContact = (body: Body, contact: Contact): void => {
-    this.world.destroyBody(body)
-    const contactManager = this.world.getContactManager()
-    contactManager.destroy(contact)
+  private destroyBodyAndContact = (body: Body<UserData>, contact: Contact): void => {
+    if (body.userData) {
+      const { id, type } = body.userData
+      if (type != 'ship') {
+        this.destroy(id)
+        const contactManager = this.world.getContactManager()
+        contactManager.destroy(contact)
+      }
+    }
   }
 }

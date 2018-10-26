@@ -8,10 +8,10 @@ import { UserData } from './synchronizer'
 export type OnBodyAndContactDestroy = (body: Body<UserData>, contact: Contact<UserData>) => void
 
 export class ContactListener implements BaseContactListener<UserData> {
-  private onBodyAndContactDestroy: void | OnBodyAndContactDestroy
+  private onDestroyBodyAndContact: void | OnBodyAndContactDestroy
 
   constructor(onBodyAndContactDestroy?: void | OnBodyAndContactDestroy) {
-    this.onBodyAndContactDestroy = onBodyAndContactDestroy
+    this.onDestroyBodyAndContact = onBodyAndContactDestroy
   }
 
   beginContact(contact: Contact<UserData>): void {
@@ -23,11 +23,11 @@ export class ContactListener implements BaseContactListener<UserData> {
       typeA === 'arena' && typeB === 'rocket' ||
       typeA === 'black-hole' && (typeB === 'rocket' || typeB === 'ship')
     ) {
-      this.onBodyAndContactDestroy && this.onBodyAndContactDestroy(contact.bodyB, contact)
+      this.onDestroyBodyAndContact && this.onDestroyBodyAndContact(contact.bodyB, contact)
     }
     if (typeA === 'ship' && typeB === 'rocket') {
-      this.onBodyAndContactDestroy && this.onBodyAndContactDestroy(contact.bodyA, contact)
-      this.onBodyAndContactDestroy && this.onBodyAndContactDestroy(contact.bodyB, contact)
+      this.onDestroyBodyAndContact && this.onDestroyBodyAndContact(contact.bodyA, contact)
+      this.onDestroyBodyAndContact && this.onDestroyBodyAndContact(contact.bodyB, contact)
     }
   }
 
