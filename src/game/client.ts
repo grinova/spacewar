@@ -9,14 +9,17 @@ import { BodyType } from 'classic2d/dist/classic2d/physics/body'
 import { Client as PhysicsClient, Net } from 'physics-net'
 import { ContactListener } from './contact-listener'
 import { UserData } from './synchronizer'
+import { UserShipController } from './user-ship-controller'
 import { RocketActor, RocketActorProps } from '../actors/rocket-actor'
 import { ShipActor, ShipActorProps } from '../actors/ship-actor'
 import { RocketController } from '../controller/rocket-controller'
 import { ShipController } from '../controller/ship-controller'
+import { SystemHandler } from '../handlers/system-handler'
 
 export class Client
 extends PhysicsClient {
   private world: World
+  private userShipController: void | UserShipController
 
   constructor(net: Net, world: World) {
     super(net, world)
@@ -130,6 +133,18 @@ extends PhysicsClient {
     this.getActorsFactory().register('rocket', {
       create: (props: RocketActorProps) => new RocketActor(props)
     })
+
+    this.getSystemRouter().register('default', new SystemHandler({
+      onUserName: this.handleUserName
+    }))
+  }
+
+  getUserShipController(): void | UserShipController {
+    return this.userShipController
+  }
+
+  private handleUserName = (userName: string): void => {
+    this.userShipController = new UserShipController(userName, this.getEventSender())
   }
 
   private destroyBodyAndContact = (body: Body<UserData>, contact: Contact): void => {

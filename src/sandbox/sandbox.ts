@@ -2,7 +2,6 @@ import { TimeDelta, World } from 'classic2d'
 import { createSandbox, Sandbox } from 'classic2d-sandbox'
 import { Net } from 'physics-net'
 import { singleShot } from './helpers/wrappers'
-import { ShipMessage } from '../actors/ship-actor'
 import { Client } from '../game/client'
 import { IDS } from '../game/consts'
 import { UserData } from '../game/synchronizer'
@@ -32,19 +31,22 @@ class SandboxHandler {
     if (!this.client) {
       return
     }
-    const sender = this.client.getEventSender()
+    const controller = this.client.getUserShipController()
+    if (!controller) {
+      return
+    }
     switch (event.key) {
       case 'w':
-        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'thrust', amount: 1 } })
+        controller.thrust(1)
         break
       case 'a':
-        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'torque', amount: 1 } })
+        controller.torque(1)
         break
       case 'd':
-        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'torque', amount: -1 } })
+        controller.torque(-1)
         break
       case ' ':
-        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'fire' } })
+        controller.fire()
         break
     }
   };
@@ -53,14 +55,17 @@ class SandboxHandler {
     if (!this.client) {
       return
     }
-    const sender = this.client.getEventSender()
+    const controller = this.client.getUserShipController()
+    if (!controller) {
+      return
+    }
     switch (event.key) {
       case 'w':
-        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'thrust', amount: 0 } })
+        controller.thrust(0)
         break
       case 'a':
       case 'd':
-        sender.send<ShipMessage>({ id: 'ship-a', data: { type: 'torque', amount: 0 } })
+        controller.torque(0)
         break
     }
   };
