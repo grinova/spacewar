@@ -3,7 +3,13 @@ import { run } from '../sandbox'
 
 window.onload = () => {
   run(
-    () => new WebSocketNet(new WebSocket('ws://localhost:3000/ws')),
+    () => {
+      const url = new URL(window.location.href)
+      url.protocol = "ws"
+      url.port = "3000"
+      url.pathname = "ws"
+      return new WebSocketNet(new WebSocket(url.href))
+    },
     () => null
   );
 };
