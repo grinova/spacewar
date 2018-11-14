@@ -7,7 +7,7 @@ extends BaseController {
   private static readonly MAX_TORQUE = 5
   private static readonly DUMP_ROTATION_COEF = 0.97
 
-  private throttle: number = 0
+  private thrust: number = 0
   private torque: number = 0
 
   // TODO: Реализовать задержку между выстрелами
@@ -24,12 +24,15 @@ extends BaseController {
   }
 
   setThrust(thrust: number): void {
-    this.throttle = thrust
+    this.thrust = thrust
   }
 
   step(_time: TimeDelta): void {
-    const { body } = this
-    const force = new Vec2(0, this.throttle)
+    const body = this.getBody()
+    if (!body) {
+      return
+    }
+    const force = new Vec2(0, this.thrust)
     force.rotate(body.getRot())
     body.applyForce(force.mul(ShipController.MAX_FORCE))
     body.setTorque(this.torque * ShipController.MAX_TORQUE)

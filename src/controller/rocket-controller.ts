@@ -6,7 +6,11 @@ extends BaseController {
   private static readonly FORCE = 1
 
   step(_time: TimeDelta): void {
-    const force = new Vec2(0, RocketController.FORCE).rotate(this.body.getRot())
-    this.body.applyForce(force)
+    const body = this.getBody()
+    if (!body) {
+      return
+    }
+    const force = new Vec2(0, RocketController.FORCE).rotate(body.getRot())
+    body.applyForce(force)
   }
 }

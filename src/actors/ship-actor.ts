@@ -30,8 +30,9 @@ extends ControllerActor<ShipController, ShipMessage> {
         break
       case 'fire':
         if (this.controller.canLaunchRocket()) {
-          const ship = this.controller.body
-          if (ship.userData) {
+          const ship = this.controller.getBody()
+          if (ship && ship.userData) {
+            // TODO: Добавить тип для userData
             const shipId = ship.userData.id
             spawn(id => this.creator.create<RocketActorCreatorProps>(id, 'rocket', { shipId, id }))
           }

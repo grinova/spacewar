@@ -118,14 +118,8 @@ extends PhysicsClient {
       }
     })
 
-    this.getControllersFactory().register('ship', {
-      create: ({ body }) => {
-        return new ShipController(body)
-      }
-    })
-    this.getControllersFactory().register('rocket', {
-      create: ({ body }) => new RocketController(body)
-    })
+    this.getControllersFactory().register('ship', { create: () => new ShipController() })
+    this.getControllersFactory().register('rocket', { create: () => new RocketController() })
 
     this.getActorsFactory().register('ship', {
       create: (props: ShipActorProps) => new ShipActor(props)
