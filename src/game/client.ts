@@ -10,8 +10,8 @@ import { Client as PhysicsClient, Net } from 'physics-net'
 import { ContactListener } from './contact-listener'
 import { UserData } from './synchronizer'
 import { UserShipController } from './user-ship-controller'
-import { RocketActor, RocketActorProps } from '../actors/rocket-actor'
-import { ShipActor, ShipActorProps } from '../actors/ship-actor'
+import { RocketActor } from '../actors/rocket-actor'
+import { ShipActor } from '../actors/ship-actor'
 import { RocketController } from '../controller/rocket-controller'
 import { ShipController } from '../controller/ship-controller'
 import { SystemHandler } from '../handlers/system-handler'
@@ -121,12 +121,8 @@ extends PhysicsClient {
     this.getControllersFactory().register('ship', { create: () => new ShipController() })
     this.getControllersFactory().register('rocket', { create: () => new RocketController() })
 
-    this.getActorsFactory().register('ship', {
-      create: (props: ShipActorProps) => new ShipActor(props)
-    })
-    this.getActorsFactory().register('rocket', {
-      create: (props: RocketActorProps) => new RocketActor(props)
-    })
+    this.getActorsFactory().register('ship', { create: () => new ShipActor() })
+    this.getActorsFactory().register('rocket', { create: () => new RocketActor() })
 
     this.getSystemRouter().register('default', new SystemHandler({
       onUserName: this.handleUserName

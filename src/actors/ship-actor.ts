@@ -4,7 +4,7 @@ import {
   Send,
   Spawn
   } from 'actors-ts'
-import { ControllerActor, ControllerActorProps } from 'physics-net'
+import { ControllerActor } from 'physics-net'
 import { ShipController } from '../controller/ship-controller'
 import { RocketActorCreatorProps } from '../creators/rocket'
 
@@ -15,26 +15,30 @@ export type ShipMessage =
     { type: 'fire' }
   ) & Message
 
-export interface ShipActorProps
-extends ControllerActorProps<ShipController> {}
-
 export class ShipActor
 extends ControllerActor<ShipController, ShipMessage> {
   onMessage(message: ShipMessage, _send: Send, spawn: Spawn, _exit: Exit): void {
+    const controller = this.getController()
+    if (!controller) {
+      return
+    }
     switch (message.type) {
       case 'thrust':
-        this.controller.setThrust(message.amount)
+        controller.setThrust(message.amount)
         break
       case 'torque':
-        this.controller.setTorque(message.amount)
+        controller.setTorque(message.amount)
         break
       case 'fire':
-        if (this.controller.canLaunchRocket()) {
-          const ship = this.controller.getBody()
+        if (controller.canLaunchRocket()) {
+          const ship = controller.getBody()
           if (ship && ship.userData) {
             // TODO: Добавить тип для userData
             const shipId = ship.userData.id
-            spawn(id => this.creator.create<RocketActorCreatorProps>(id, 'rocket', { shipId, id }))
+            const creator = this.getCreator()
+            if (creator) {
+              spawn(id => creator.create<RocketActorCreatorProps>(id, 'rocket', { shipId, id }))
+            }
           }
         }
         break
