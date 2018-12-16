@@ -7,6 +7,14 @@ import { UserData } from './synchronizer'
 
 export type OnBodyAndContactDestroy = (body: Body<UserData>, contact: Contact<UserData>) => void
 
+const shouldDestroy: { [id: string]: [boolean, boolean] } = {
+  'arena|rocket': [false, true],
+  'black-hole|rocket': [false, true],
+  'black-hole|ship': [false, true],
+  'ship|rocket': [false, true],
+  'rocket|rocket': [true, true],
+}
+
 export class ContactListener implements BaseContactListener<UserData> {
   private onDestroyBodyAndContact: void | OnBodyAndContactDestroy
 
@@ -15,19 +23,27 @@ export class ContactListener implements BaseContactListener<UserData> {
   }
 
   beginContact(contact: Contact<UserData>): void {
-    const { userData: userDataA } = contact.bodyA
-    const { userData: userDataB } = contact.bodyB
+    let { bodyA, bodyB } = contact
+    const { userData: userDataA } = bodyA
+    const { userData: userDataB } = bodyB
     const { type: typeA } = userDataA
     const { type: typeB } = userDataB
-    if (
-      typeA === 'arena' && typeB === 'rocket' ||
-      typeA === 'black-hole' && (typeB === 'rocket' || typeB === 'ship')
-    ) {
-      this.onDestroyBodyAndContact && this.onDestroyBodyAndContact(contact.bodyB, contact)
+    let pair = shouldDestroy[[typeA, typeB].join('|')]
+    if (!pair) {
+      [bodyB, bodyA] = [bodyA, bodyB]
+      pair = shouldDestroy[[typeB, typeA].join('|')]
     }
-    if (typeA === 'ship' && typeB === 'rocket') {
-      this.onDestroyBodyAndContact && this.onDestroyBodyAndContact(contact.bodyA, contact)
-      this.onDestroyBodyAndContact && this.onDestroyBodyAndContact(contact.bodyB, contact)
+    if (pair) {
+      if (pair[0]) {
+        this.onDestroyBodyAndContact && this.onDestroyBodyAndContact(bodyA, contact)
+      } else if (bodyA.userData.type == 'rocket') {
+        console.log('Rocket did not destroy')
+      }
+      if (pair[1]) {
+        this.onDestroyBodyAndContact && this.onDestroyBodyAndContact(bodyB, contact)
+      } else if (bodyB.userData.type == 'rocket') {
+        console.log('Rocket did not destroy')
+      }
     }
   }
 
