@@ -1,0 +1,46 @@
+::selection {
+  background: white;
+  color: gray
+}
+
+* {
+  color: white;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+body {
+  background-color: black
+}
+
+#game-title {
+  text-align: center;
+  font-size: 7em;
+}
+
+#login-form {
+  display: none;
+  margin-top: 10em;
+}
+
+#player-name-container {
+  margin: auto;
+  max-width: 47em;
+}
+
+#player-name {
+  font-size: 4em;
+  text-align: center;
+  background-color: #00000000;
+  border-width: 0;
+  box-shadow: 0 0 0px 2px white;
+  transition: background-color 0.5s ease;
+}
+
+#player-name:hover {
+  background-color: #80808080;
+}
+
+#player-name:focus {
+  outline:0;
+}

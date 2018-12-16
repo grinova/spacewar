@@ -1,4 +1,4 @@
-export const IDS = {
+/* export const IDS = {
   ARENA: 'arena',
   BLACK_HOLE: 'black-hole',
   SHIP_A: 'ship-a',
@@ -6,3 +6,4 @@ export const IDS = {
   ROCKET_A: 'rocket-a',
   ROCKET_B: 'rocket-b'
 }
+ */

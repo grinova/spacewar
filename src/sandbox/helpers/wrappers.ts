@@ -1,10 +1,11 @@
 const flags: Map<string, boolean> = new Map<string, boolean>();
 
+export type CancelableKeyboardHandler = (event: KeyboardEvent) => boolean;
 export type KeyboardHandler = (event: KeyboardEvent) => void;
 
 export function singleShot(
-  keyDown: KeyboardHandler,
-  keyUp: KeyboardHandler,
+  keyDown: CancelableKeyboardHandler,
+  keyUp: CancelableKeyboardHandler,
   ...keys: string[]
 ): { keyDown: KeyboardHandler, keyUp: KeyboardHandler } {
   return {
@@ -13,9 +14,8 @@ export function singleShot(
       if (keys.indexOf(key) === -1) {
         return;
       }
-      if (!flags.get(key)) {
+      if (!flags.get(key) && !keyDown(event)) {
         flags.set(key, true);
-        keyDown(event);
       }
     },
     keyUp: function(event: KeyboardEvent) {
@@ -23,9 +23,8 @@ export function singleShot(
       if (keys.indexOf(key) === -1) {
         return;
       }
-      if (flags.get(key)) {
+      if (flags.get(key) && !keyUp(event)) {
         flags.set(key, false);
-        keyUp(event);
       }
     }
   };
