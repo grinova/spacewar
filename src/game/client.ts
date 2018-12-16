@@ -4,16 +4,16 @@ import {
   Contact,
   Vec2,
   World
-  } from 'classic2d'
+} from 'classic2d'
 import { BodyType } from 'classic2d/dist/classic2d/physics/body'
 import { Client as PhysicsClient, Net } from 'physics-net'
 import { ContactListener } from './contact-listener'
-import { UserData } from './synchronizer'
 import { UserShipController } from './user-ship-controller'
 import { RocketActor } from '../actors/rocket-actor'
 import { ShipActor } from '../actors/ship-actor'
 import { RocketController } from '../controller/rocket-controller'
 import { ShipController } from '../controller/ship-controller'
+import { UserData } from '../data/user-data'
 import { SystemHandler } from '../handlers/system-handler'
 
 export class Client

@@ -2,8 +2,8 @@ import {
   Body,
   Contact,
   ContactListener as BaseContactListener
-  } from 'classic2d'
-import { UserData } from './synchronizer'
+} from 'classic2d'
+import { UserData } from '../data/user-data'
 
 export type OnBodyAndContactDestroy = (body: Body<UserData>, contact: Contact<UserData>) => void
 

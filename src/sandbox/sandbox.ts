@@ -2,9 +2,9 @@ import { TimeDelta, World } from 'classic2d'
 import { createSandbox, Sandbox } from 'classic2d-sandbox'
 import { Net } from 'physics-net'
 import { singleShot } from './helpers/wrappers'
+import { UserData } from '../data/user-data'
 import { Client } from '../game/client'
 import { IDS } from '../game/consts'
-import { UserData } from '../game/synchronizer'
 
 export interface Actions {
   preReset?: void | (() => void);
