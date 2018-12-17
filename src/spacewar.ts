@@ -1,10 +1,10 @@
 import { Mat4, World } from 'classic2d'
 import { CrtScreen } from 'crt-screen'
 import { Camera } from 'crt-screen'
-import { WebSocketNet } from 'physics-net'
 import { setCanvasSize } from './common/dom'
 import { UserData } from './data/user-data'
 import { Client } from './game/client'
+import { UserShipController } from './game/user-ship-controller'
 
 const PXSIZE = 3
 const DEFAULT_ZOOM = 15
@@ -24,23 +24,18 @@ export interface SpaceWarActions {
   disconnect?: () => void
 }
 
-export interface SpaceWarOptions {
+export interface SpaceWarProps {
   actions?: SpaceWarActions
   canvas: HTMLCanvasElement
-  ws: WebSocket
-  width: number
-  height: number
+  world: World<UserData>
+  client: Client
+  userShipController: UserShipController
 }
 
 export class SpaceWar {
-  private actions?: SpaceWarActions
-  private canvas: HTMLCanvasElement
-  private ws: WebSocket
-
-  private world: World<UserData>
-  private client: Client
-  private net: WebSocketNet
+  private props: SpaceWarProps
   private camera: Camera
+
   private screen: CrtScreen
 
   private past = 0
@@ -48,17 +43,14 @@ export class SpaceWar {
 
   private circleModelIndex: number
 
-  constructor(options: SpaceWarOptions) {
-    const { actions, canvas, width: w, height: h, ws } = options
-    this.actions = actions
-    this.canvas = canvas
-    this.ws = ws
+  constructor(props: SpaceWarProps, w: number, h: number) {
+    this.props = props
 
     const [width, height] = roundSize(w, h)
-    setCanvasSize(canvas, width, height)
+    setCanvasSize(this.props.canvas, width, height)
     this.camera = new Camera(0, 0, DEFAULT_ZOOM, width, height)
     this.screen = new CrtScreen(
-      <WebGLRenderingContext>canvas.getContext('webgl2'),
+      <WebGLRenderingContext>this.props.canvas.getContext('webgl2'),
       this.camera,
       {
         pixelizationShaderOptions: { pxsize: PXSIZE, minEdge: 1, maxEdge: 2 },
@@ -67,10 +59,6 @@ export class SpaceWar {
         size: calcSize(width, height)
       }
     )
-
-    this.world = new World<UserData>()
-    this.net = new WebSocketNet(ws)
-    this.client = new Client(this.net, this.world)
 
     const modelShader = this.screen.getModelShader()
     {
@@ -98,12 +86,12 @@ export class SpaceWar {
   }
 
   disconnect(): void {
-    this.ws.close()
-    this.actions && this.actions.disconnect && this.actions.disconnect()
+    const { actions } = this.props
+    actions && actions.disconnect && actions.disconnect()
   }
 
   keyDown(event: KeyboardEvent): boolean {
-    const controller = this.client.getUserShipController()
+    const { userShipController: controller } = this.props
     switch (event.key) {
       case 'Escape':
         this.disconnect()
@@ -129,7 +117,7 @@ export class SpaceWar {
   }
 
   keyUp(event: KeyboardEvent): boolean {
-    const controller = this.client.getUserShipController()
+    const { userShipController: controller } = this.props
     if (!controller) {
       return
     }
@@ -146,7 +134,7 @@ export class SpaceWar {
 
   resize(width: number, height: number): void {
     const [w, h] = roundSize(width, height)
-    setCanvasSize(this.canvas, w, h)
+    setCanvasSize(this.props.canvas, w, h)
     this.camera.width = w
     this.camera.height = h
     this.screen.resize(w, h, calcSize(w, h))
@@ -163,7 +151,7 @@ export class SpaceWar {
 
   private drawScene(duration: number): void {
     this.screen.setFrameDuration(duration / 1000)
-    const bodies = this.world.getBodies()
+    const bodies = this.props.world.getBodies()
     for (const body of bodies) {
       const position = body.getPosition()
       const angle = body.getAngle()
@@ -178,10 +166,11 @@ export class SpaceWar {
     if (!this.running) {
       return
     }
+    const { world, client } = this.props
     const duration = now - this.past
-    this.client && this.client.simulate(duration)
+    client && client.simulate(duration)
     this.past = now
-    this.world.step(duration)
+    world.step(duration)
     this.drawScene(duration)
     requestAnimationFrame(this.render)
   }

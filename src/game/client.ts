@@ -8,22 +8,26 @@ import {
 import { BodyType } from 'classic2d/dist/classic2d/physics/body'
 import { Client as PhysicsClient, Net } from 'physics-net'
 import { ContactListener } from './contact-listener'
-import { UserShipController } from './user-ship-controller'
 import { RocketActor } from '../actors/rocket-actor'
 import { ShipActor } from '../actors/ship-actor'
 import { RocketController } from '../controller/rocket-controller'
 import { ShipController } from '../controller/ship-controller'
 import { UserData } from '../data/user-data'
-import { SystemHandler } from '../handlers/system-handler'
+import { SystemHandler, SystemHandlerListener } from '../handlers/system-handler'
+
+export interface ClientListener extends SystemHandlerListener {
+  onConnect?(): void
+}
 
 export class Client
-extends PhysicsClient {
+  extends PhysicsClient {
   private world: World
-  private userShipController: void | UserShipController
+  private listener: ClientListener
 
-  constructor(net: Net, world: World) {
+  constructor(net: Net, world: World, listener: ClientListener) {
     super(net, world)
     this.world = world
+    this.listener = listener
     this.world.setContactListener(new ContactListener(this.destroyBodyAndContact))
   }
 
@@ -124,17 +128,8 @@ extends PhysicsClient {
     this.getActorsFactory().register('ship', { create: () => new ShipActor() })
     this.getActorsFactory().register('rocket', { create: () => new RocketActor() })
 
-    this.getSystemRouter().register('default', new SystemHandler({
-      onUserName: this.handleUserName
-    }))
-  }
-
-  getUserShipController(): void | UserShipController {
-    return this.userShipController
-  }
-
-  private handleUserName = (userName: string): void => {
-    this.userShipController = new UserShipController(userName, this.getEventSender())
+    this.getSystemRouter().register('default', new SystemHandler(this.listener))
+    this.listener.onConnect && this.listener.onConnect()
   }
 
   private destroyBodyAndContact = (body: Body<UserData>, contact: Contact): void => {

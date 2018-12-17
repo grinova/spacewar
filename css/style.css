@@ -1,3 +1,15 @@
+@keyframes spinner {
+  25% {
+    content: "-";
+  }
+  50% {
+    content: "\\";
+  }
+  75% {
+    content: "|";
+  }
+}
+
 ::selection {
   background: white;
   color: gray
@@ -13,14 +25,14 @@ body {
   background-color: black
 }
 
-#game-title {
-  text-align: center;
-  font-size: 7em;
-}
-
 #login-form {
   display: none;
   margin-top: 10em;
+}
+
+#game-title {
+  text-align: center;
+  font-size: 7em;
 }
 
 #player-name-container {
@@ -43,4 +55,19 @@ body {
 
 #player-name:focus {
   outline:0;
+}
+
+#waiting-screen {
+  display: none;
+  text-align: center;
+  margin-top: 10em;
+}
+
+#spinner {
+  font-size: 20em;
+}
+
+#spinner::after {
+  content: "/";
+  animation: spinner 2s linear infinite;
 }

@@ -14,16 +14,10 @@ export function setCanvasSize(canvas: HTMLCanvasElement, width: number, height: 
   canvas.style.height = height + 'px';
 }
 
-export function hide(id: string): void {
-  const element = document.getElementById(id)
-  if (element) {
-    element.style.display = 'none'
-  }
+export function hide(element: HTMLElement): void {
+  element.style.display = 'none'
 }
 
-export function show(id: string): void {
-  const element = document.getElementById(id)
-  if (element) {
-    element.style.display = 'inherit'
-  }
+export function show(element: HTMLElement): void {
+  element.style.display = 'inherit'
 }
