@@ -17,6 +17,8 @@ import { UserShipController } from './game/user-ship-controller'
 import { KeyboardHandler, singleShot } from './sandbox/helpers/wrappers'
 import { SpaceWar } from './spacewar'
 
+const MAX_SCORE = 10
+
 const MOUNT_POINT_ID = 'mount-point'
 const LOGIN_FORM_ID = 'login-form'
 const PLAYER_NAME_ID = 'player-name'
@@ -40,6 +42,9 @@ class GameMachine {
 
   private machine: StateMachine
   private playerName: string
+  private scoreBoard: {
+    [playerName: string]: number
+  } = {}
 
   private ws: WebSocket
   private world: World<UserData>
@@ -72,6 +77,7 @@ class GameMachine {
 
   private handleEnderLogin = (): void => {
     show(this.loginElement)
+    this.ws && this.ws.close()
     this.playerInput.addEventListener('keydown', this.handleKeyDownPlayerInput)
     this.playerInput.focus()
   }
@@ -88,17 +94,20 @@ class GameMachine {
     const net = new WebSocketNet(this.ws)
     const listener = {
       onConnect: this.handleConnect,
+      onDisconnect: this.handleDisconnect,
+      onError: this.handleError,
       onUserName: this.handleUserName,
       onOpponentJoin: this.handleOpponentJoin,
       onOpponentLeave: this.handleOpponentLeave,
+      onScore: this.handlePlayerScore,
     }
     this.client = new Client(net, this.world, listener)
-    this.client.onError = this.handleError
-    this.client.onDisconnect = this.handleDisconnect
+    window.addEventListener('keydown', this.handleWaitingKeyDown)
   }
 
   private handleLeaveWaiting = (): void => {
     hide(this.watingScreenElement)
+    window.removeEventListener('keydown', this.handleWaitingKeyDown)
   }
 
   private handleEnterGame = (): void => {
@@ -161,10 +170,25 @@ class GameMachine {
     this.machine.sig(Signal.OpponentLeave)
   }
 
+  private handlePlayerScore = (playerName: string, amount: number): void => {
+    const score = this.scoreBoard[playerName] = (this.scoreBoard[playerName] || 0) + amount
+    if (score < MAX_SCORE) {
+      this.machine.sig(Signal.Score)
+    } else {
+      this.machine.sig(Signal.Final)
+    }
+  }
+
   private handleKeyDownPlayerInput = (event: KeyboardEvent) => {
     if (event.keyCode == 13) {
       this.playerName = this.playerInput.value
       this.machine.sig(Signal.Enter)
+    }
+  }
+
+  private handleWaitingKeyDown = (event: KeyboardEvent) => {
+    if (event.key == 'Escape') {
+      this.machine.sig(Signal.Cancel)
     }
   }
 

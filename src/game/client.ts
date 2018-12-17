@@ -6,7 +6,7 @@ import {
   World
 } from 'classic2d'
 import { BodyType } from 'classic2d/dist/classic2d/physics/body'
-import { Client as PhysicsClient, Net } from 'physics-net'
+import { Client as PhysicsClient, Net, ClientListener as PhysicsClientListener } from 'physics-net'
 import { ContactListener } from './contact-listener'
 import { RocketActor } from '../actors/rocket-actor'
 import { ShipActor } from '../actors/ship-actor'
@@ -15,19 +15,19 @@ import { ShipController } from '../controller/ship-controller'
 import { UserData } from '../data/user-data'
 import { SystemHandler, SystemHandlerListener } from '../handlers/system-handler'
 
-export interface ClientListener extends SystemHandlerListener {
-  onConnect?(): void
+export interface ClientListener extends PhysicsClientListener, SystemHandlerListener {
 }
 
 export class Client
-  extends PhysicsClient {
+extends PhysicsClient {
   private world: World
-  private listener: ClientListener
+  private clientListener: ClientListener
 
   constructor(net: Net, world: World, listener: ClientListener) {
     super(net, world)
+    this.clientListener = listener
+    this.setListener({ ...listener, onConnect: this.onConnect })
     this.world = world
-    this.listener = listener
     this.world.setContactListener(new ContactListener(this.destroyBodyAndContact))
   }
 
@@ -128,8 +128,8 @@ export class Client
     this.getActorsFactory().register('ship', { create: () => new ShipActor() })
     this.getActorsFactory().register('rocket', { create: () => new RocketActor() })
 
-    this.getSystemRouter().register('default', new SystemHandler(this.listener))
-    this.listener.onConnect && this.listener.onConnect()
+    this.getSystemRouter().register('default', new SystemHandler(this.clientListener))
+    this.clientListener.onConnect && this.clientListener.onConnect()
   }
 
   private destroyBodyAndContact = (body: Body<UserData>, contact: Contact): void => {

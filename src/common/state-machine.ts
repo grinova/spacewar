@@ -32,7 +32,7 @@ export class StateMachine {
   }
 
   private set(state: State): void {
-    if (state == null) {
+    if (state == null || this.state == state) {
       return
     }
     this.leave(this.state)

@@ -4,12 +4,14 @@ export interface SystemHandlerListener {
   onUserName(userName: string): void
   onOpponentJoin(opponentName: string): void
   onOpponentLeave(opponentName: string): void
+  onScore(playerName: string, amount: number): void
 }
 
 export type SystemMessage =
   { type: 'user-name', data: string } |
   { type: 'opponent-join', data: string } |
-  { type: 'opponent-leave', data: string }
+  { type: 'opponent-leave', data: string } |
+  { type: 'score', data: { playerName: string, amount: number } }
 
 export class SystemHandler
 implements Handler<SystemMessage> {
@@ -29,6 +31,9 @@ implements Handler<SystemMessage> {
         break
       case 'opponent-leave':
         this.listener.onOpponentLeave(message.data)
+        break
+      case 'score':
+        this.listener.onScore(message.data.playerName, message.data.amount)
         break
     }
   }

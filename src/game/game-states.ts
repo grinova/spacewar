@@ -7,6 +7,7 @@ export enum State {
 
 export enum Signal {
   Enter,
+  Cancel,
   PlayerLeave,
   PlayerConnErr,
   OpponentJoin,
@@ -22,12 +23,11 @@ export const states = {
     [Signal.Enter]: State.Waiting,
   },
   [State.Waiting]: {
-    [Signal.PlayerLeave]: State.Login,
+    [Signal.Cancel]: State.Login,
     [Signal.PlayerConnErr]: State.Login,
     [Signal.OpponentJoin]: State.Game,
   },
   [State.Game]: {
-    [Signal.Score]: State.Game,
     [Signal.PlayerLeave]: State.Login,
     [Signal.PlayerConnErr]: State.Login,
     [Signal.OpponentLeave]: State.Waiting,
