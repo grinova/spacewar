@@ -23,6 +23,11 @@ const MOUNT_POINT_ID = 'mount-point'
 const LOGIN_FORM_ID = 'login-form'
 const PLAYER_NAME_ID = 'player-name'
 const WAITING_SCREEN_ID = 'waiting-screen'
+const SCORE_BOARD_ID = 'score-board'
+const PLAYER_A_NAME_ID = 'player-a-name'
+const PLAYER_B_NAME_ID = 'player-b-name'
+const PLAYER_A_SCORE_ID = 'player-a-score'
+const PLAYER_B_SCORE_ID = 'player-b-score'
 
 function createWebSocket(): WebSocket {
   const url = new URL(window.location.href)
@@ -38,10 +43,16 @@ class GameMachine {
   private loginElement: HTMLElement
   private playerInput: HTMLInputElement
   private watingScreenElement: HTMLElement
+  private scoreBoardElement: HTMLElement
+  private playerANameElement: HTMLElement
+  private playerBNameElement: HTMLElement
+  private playerAScoreElement: HTMLElement
+  private playerBScoreElement: HTMLElement
   private removeCanvasElement: () => void
 
   private machine: StateMachine
   private playerName: string
+  private opponentName: string
   private scoreBoard: {
     [playerName: string]: number
   } = {}
@@ -57,6 +68,11 @@ class GameMachine {
     this.loginElement = document.getElementById(LOGIN_FORM_ID)
     this.playerInput = <HTMLInputElement>document.getElementById(PLAYER_NAME_ID)
     this.watingScreenElement = document.getElementById(WAITING_SCREEN_ID)
+    this.scoreBoardElement = document.getElementById(SCORE_BOARD_ID)
+    this.playerANameElement = document.getElementById(PLAYER_A_NAME_ID)
+    this.playerBNameElement = document.getElementById(PLAYER_B_NAME_ID)
+    this.playerAScoreElement = document.getElementById(PLAYER_A_SCORE_ID)
+    this.playerBScoreElement = document.getElementById(PLAYER_B_SCORE_ID)
     const { keyDown, keyUp } = singleShot(
       (event: KeyboardEvent) => this.spacewar.keyDown(event),
       (event: KeyboardEvent) => this.spacewar.keyUp(event),
@@ -111,10 +127,18 @@ class GameMachine {
   }
 
   private handleEnterGame = (): void => {
+    show(this.scoreBoardElement)
+    // FIXME: 'ship-a' - магическая константа
+    const [playerAName, playerBName] =
+      this.userShipController.userShipId == 'ship-a' ?
+      [this.playerName, this.opponentName] :
+      [this.opponentName, this.playerName]
+    this.playerANameElement.innerText = playerAName
+    this.playerBNameElement.innerText = playerBName
+    this.playerAScoreElement.innerText = '0'
+    this.playerBScoreElement.innerText = '0'
     const { element: canvas, remove } = appendDomElement('canvas', this.mountingPointElement)
     this.removeCanvasElement = remove
-    document.body.style.overflow = 'hidden'
-    document.body.style.margin = '0px'
     const actions = {
       disconnect: () => {
         this.machine.sig(Signal.PlayerLeave)
@@ -131,6 +155,11 @@ class GameMachine {
   }
 
   private handleLeaveGame = (): void => {
+    hide(this.scoreBoardElement)
+    this.playerANameElement.innerText = ''
+    this.playerBNameElement.innerText = ''
+    this.playerAScoreElement.innerText = ''
+    this.playerBScoreElement.innerText = ''
     this.spacewar.stop()
     this.ws.close()
     this.removeCanvasElement()
@@ -162,7 +191,8 @@ class GameMachine {
     this.userShipController = new UserShipController(userName, this.client.getEventSender())
   }
 
-  private handleOpponentJoin = (_opponentName: string): void => {
+  private handleOpponentJoin = (opponentName: string): void => {
+    this.opponentName = opponentName
     this.machine.sig(Signal.OpponentJoin)
   }
 
@@ -177,6 +207,13 @@ class GameMachine {
     } else {
       this.machine.sig(Signal.Final)
     }
+    // FIXME: 'ship-a' - магическая константа
+    const [playerAName, playerBName] =
+      this.userShipController.userShipId == 'ship-a' ?
+      [this.playerName, this.opponentName] :
+      [this.opponentName, this.playerName]
+    this.playerAScoreElement.innerHTML = (this.scoreBoard[playerAName] || 0).toString()
+    this.playerBScoreElement.innerHTML = (this.scoreBoard[playerBName] || 0).toString()
   }
 
   private handleKeyDownPlayerInput = (event: KeyboardEvent) => {

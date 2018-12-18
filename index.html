@@ -4,15 +4,25 @@
 <body>
   <script src='./static/index.js'></script>
   <div id="mount-point">
-    <div id="login-form">
+    <div id="login-form" style="display: none">
         <h1 id="game-title">Space war</h1>
         <div id="player-name-container">
           <input id="player-name" type="input" placeholder="enter player name">
         </div>
     </div>
-    <div id="waiting-screen">
+    <div id="waiting-screen" style="display: none">
       <h1>waiting</h1>
       <div id="spinner"></div>
+    </div>
+    <div id="score-board" class="score-board" style="display: none">
+      <div class="score-board__item score-board__item--left">
+        <div id="player-a-name"></div>
+        <div id="player-a-score"></div>
+      </div>
+      <div class="score-board__item score-board__item--right">
+        <div id="player-b-name"></div>
+        <div id="player-b-score"></div>
+      </div>
     </div>
   </div>
 </body>

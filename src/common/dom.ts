@@ -19,5 +19,5 @@ export function hide(element: HTMLElement): void {
 }
 
 export function show(element: HTMLElement): void {
-  element.style.display = 'inherit'
+  element.style.display = ''
 }

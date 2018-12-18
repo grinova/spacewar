@@ -2,7 +2,7 @@ import { EventSender } from 'physics-net'
 import { ShipMessage } from '../actors/ship-actor'
 
 export class UserShipController {
-  private userShipId: string
+  readonly userShipId: string
   private sender: EventSender
 
   constructor(userShipId: string, sender: EventSender) {
